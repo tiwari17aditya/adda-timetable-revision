@@ -25,10 +25,10 @@ function logEvent(message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString();
     const logObj = { timestamp, message, type };
     appState.systemLogs.unshift(logObj);
-    
+
     // Limit log memory to 100 entries
     if (appState.systemLogs.length > 100) appState.systemLogs.pop();
-    
+
     // Display in UI console
     const consoleEl = document.getElementById('sys-log-console');
     if (consoleEl) {
@@ -36,7 +36,7 @@ function logEvent(message, type = 'info') {
         logRow.className = `log-row ${type}`;
         logRow.innerHTML = `<span class="log-time">[${timestamp}]</span><span class="log-msg">${escapeHtml(message)}</span>`;
         consoleEl.insertBefore(logRow, consoleEl.firstChild);
-        
+
         // Keep scroll top
         consoleEl.scrollTop = 0;
     }
@@ -64,13 +64,20 @@ function safeExecute(fn, errorContext) {
     }
 }
 
-/* LocalStorage Systems */
+/* LocalStorage Systems & File Handles */
+let fileHandle = null;
+
 function saveState() {
     safeExecute(() => {
         localStorage.setItem('air10_timetable_status', JSON.stringify(appState.timetableStatus));
         localStorage.setItem('air10_mocks', JSON.stringify(appState.mocks));
         localStorage.setItem('air10_drills', JSON.stringify(appState.dailyDrills));
         logEvent("State serialized and saved to browser database", "success");
+
+        // Auto-sync if file linked
+        if (fileHandle) {
+            writeStateToLinkedFile();
+        }
     }, "SaveStateToLocalStorage");
 }
 
@@ -79,11 +86,11 @@ function loadState() {
         const storedTimetable = localStorage.getItem('air10_timetable_status');
         const storedMocks = localStorage.getItem('air10_mocks');
         const storedDrills = localStorage.getItem('air10_drills');
-        
+
         if (storedTimetable) appState.timetableStatus = JSON.parse(storedTimetable);
         if (storedMocks) appState.mocks = JSON.parse(storedMocks);
         if (storedDrills) appState.dailyDrills = JSON.parse(storedDrills);
-        
+
         const today = new Date().toDateString();
         if (appState.dailyDrills.lastCheckedDate !== today) {
             appState.dailyDrills.lastCheckedDate = today;
@@ -91,7 +98,7 @@ function loadState() {
             localStorage.setItem('air10_drills', JSON.stringify(appState.dailyDrills));
             logEvent("Drills reset for the new day: " + today, "info");
         }
-        
+
         logEvent("State retrieved successfully from local storage", "info");
     }, "LoadStateFromLocalStorage");
 }
@@ -108,7 +115,7 @@ const TOPICS_MATRIX = [
     { quant: "Prelims Mixed Quant Drill (Speed emphasis)", logic: "Linear Seating Arrangement puzzles", english: "Spotting Errors (Subject-Verb agreement)", it: "DBMS (1NF, 2NF, 3NF Normalization rules)" },
     { quant: "Data Interpretation (Bar & Line chart basics)", logic: "Double Row Arrangement puzzles", english: "Sentence Rearrangement tactics", it: "DBMS (BCNF & 4NF corner rules)" },
     { Sunday: true }, // Rest Day
-    
+
     // Week 2
     { quant: "Data Interpretation (Pie chart & Table)", logic: "Coded Inequality & Input-Output basics", english: "Reading Comprehension speed drills", it: "DBMS (SQL DDL vs DML commands, joins)" },
     { quant: "DI (Caselet DI Venn-diagram solving)", logic: "Machine Input-Output (Shift & Arr)", english: "Match the column & sentence connector", it: "DBMS (Index structures, B-Trees vs B+ Trees)" },
@@ -117,7 +124,7 @@ const TOPICS_MATRIX = [
     { quant: "Arithmetic (Simple & Compound Interest)", logic: "Scheduling & Month-based Puzzles", english: "Error correction (Preposition usages)", it: "CN (Subnetting, Classless CIDR IP calculation)" },
     { quant: "Data Interpretation (Arithmetic-based DI)", logic: "Category & Box Puzzles (Multi-variable)", english: "Reading Comprehension (Economy base)", it: "CN (Routing Protocols: RIP, OSPF, BGP)" },
     { Sunday: true }, // Rest Day
-    
+
     // Week 3
     { quant: "Arithmetic (Time, Speed and Distance)", logic: "Data Sufficiency (2 statements)", english: "Phrase replacement vocabulary keys", it: "DS (Array representations & LinkedList variants)" },
     { quant: "Arithmetic (Trains, Boats and Streams)", logic: "Coded Blood Relation & Directions", english: "Word Swap & Usage checks", it: "DS (Stack, Queues, Circular queues)" },
@@ -126,7 +133,7 @@ const TOPICS_MATRIX = [
     { quant: "Probability & Permutations essentials", logic: "Logical Reasoning (Statement-Assumption)", english: "Mains level error detection series", it: "SE (SDLC Models: Waterfall vs Spiral vs Agile)" },
     { quant: "Mixed Arithmetic Drills (Mains level)", logic: "Critical Reasoning (Strength of Argument)", english: "Descriptive Writing practice prep", it: "SE (Whitebox vs Blackbox testing levels)" },
     { Sunday: true }, // Rest Day
-    
+
     // Week 4
     { quant: "Data Interpretation (High level Mains DI)", logic: "Mains Puzzle (Floor & Flat with age)", english: "Vocabulary recap (200 words revisions)", it: "OOPs (Inheritance, Polymorphism dynamic)" },
     { quant: "DI (Probability & Mixture based DI)", logic: "Mains Data Sufficiency (3 statements)", english: "RC (Science & Tech based topics)", it: "OOPs (Abstraction vs Encapsulation, interface)" },
@@ -146,27 +153,27 @@ function generateDateString(dayIndex) {
 function initializeTimetable(filterType = "all") {
     const timetableContainer = document.getElementById("timetable-grid-content");
     if (!timetableContainer) return;
-    
+
     timetableContainer.innerHTML = "";
-    
+
     let totalCompleted = 0;
-    
+
     TOPICS_MATRIX.forEach((dayData, index) => {
         const isCompleted = !!appState.timetableStatus[index];
         if (isCompleted) totalCompleted++;
-        
+
         // Filter checks
         if (filterType === "pending" && isCompleted) return;
         if (filterType === "completed" && !isCompleted) return;
-        
+
         const dateStr = generateDateString(index);
-        
+
         const card = document.createElement("div");
         card.className = `timetable-day-card ${isCompleted ? 'completed' : ''}`;
         card.dataset.dayIndex = index;
-        
+
         const isSunday = dayData.Sunday;
-        
+
         let detailsHtml = "";
         if (isSunday) {
             detailsHtml = `
@@ -197,7 +204,7 @@ function initializeTimetable(filterType = "all") {
                 </div>
             `;
         }
-        
+
         card.innerHTML = `
             <div class="day-badge">
                 <span class="day-number">D-${index + 1}</span>
@@ -210,28 +217,28 @@ function initializeTimetable(filterType = "all") {
                 <input type="checkbox" class="day-checkbox" ${isCompleted ? 'checked' : ''} data-index="${index}">
             </div>
         `;
-        
+
         timetableContainer.appendChild(card);
     });
-    
+
     // Update overall Timetable Completion progress
     const totalDays = TOPICS_MATRIX.length;
     const progressPercent = Math.min(100, Math.round((totalCompleted / totalDays) * 100));
-    
+
     const progressText = document.getElementById("timetable-completion-percentage");
     const progressBar = document.getElementById("timetable-completion-bar");
-    
+
     if (progressText) progressText.innerText = `${progressPercent}%`;
     if (progressBar) progressBar.style.width = `${progressPercent}%`;
-    
+
     // Bind change checks
     document.querySelectorAll(".day-checkbox").forEach(chk => {
         chk.addEventListener("change", (e) => {
             const idx = parseInt(e.target.dataset.index);
             const checked = e.target.checked;
-            
+
             appState.timetableStatus[idx] = checked;
-            
+
             // Toggle completed class on card parent
             const cardEl = e.target.closest(".timetable-day-card");
             if (cardEl) {
@@ -241,9 +248,9 @@ function initializeTimetable(filterType = "all") {
                     cardEl.classList.remove("completed");
                 }
             }
-            
+
             saveState();
-            
+
             // Recompute overall progress recursively
             let newCompleted = 0;
             TOPICS_MATRIX.forEach((_, tempIdx) => {
@@ -252,7 +259,7 @@ function initializeTimetable(filterType = "all") {
             const newPercent = Math.min(100, Math.round((newCompleted / totalDays) * 100));
             if (progressText) progressText.innerText = `${newPercent}%`;
             if (progressBar) progressBar.style.width = `${newPercent}%`;
-            
+
             logEvent(`Timetable Day D-${idx + 1} marked as ${checked ? 'COMPLETED' : 'PENDING'}`, "info");
         });
     });
@@ -262,23 +269,23 @@ function initializeTimetable(filterType = "all") {
 function updateDashboardMetrics() {
     const mocks = appState.mocks;
     const totalMocksCount = mocks.length;
-    
+
     // Set counts
     const countBadge = document.getElementById("mocks-logged-count");
     if (countBadge) countBadge.innerText = totalMocksCount;
-    
+
     const dashAvgPercentile = document.getElementById("dashboard-avg-percentile");
     const dashAvgAccuracy = document.getElementById("dashboard-avg-accuracy");
     const headerAvgPercentile = document.getElementById("average-percentile-badge");
     const percentileStatus = document.getElementById("dashboard-percentile-status");
     const accuracyStatus = document.getElementById("dashboard-accuracy-status");
-    
+
     // Quick summary items
     const summaryAvgTime = document.getElementById("analytics-avg-time");
     const summaryBestPrelim = document.getElementById("analytics-best-prelims");
     const summaryBestSO = document.getElementById("analytics-best-so");
     const summaryPercentileStd = document.getElementById("analytics-percentile-standard");
-    
+
     if (totalMocksCount === 0) {
         if (dashAvgPercentile) dashAvgPercentile.innerText = "N/A";
         if (dashAvgAccuracy) dashAvgAccuracy.innerText = "N/A";
@@ -291,52 +298,52 @@ function updateDashboardMetrics() {
             accuracyStatus.innerHTML = `-`;
             accuracyStatus.className = "metric-indicator";
         }
-        
+
         if (summaryAvgTime) summaryAvgTime.innerText = "N/A";
         if (summaryBestPrelim) summaryBestPrelim.innerText = "N/A";
         if (summaryBestSO) summaryBestSO.innerText = "N/A";
         if (summaryPercentileStd) summaryPercentileStd.innerText = "Log mock tests";
-        
+
         renderNoChartData();
         renderNoRecentMocks();
         return;
     }
-    
+
     let sumPercentile = 0;
     let sumAccuracy = 0;
     let sumDuration = 0;
     let maxPrelims = 0;
     let maxSO = 0;
-    
+
     mocks.forEach(m => {
         sumPercentile += parseFloat(m.percentile);
         sumAccuracy += parseFloat(m.accuracy);
         sumDuration += parseFloat(m.duration);
-        
+
         if (m.type === "Prelims" || m.type === "Mains") {
             if (m.score > maxPrelims) maxPrelims = m.score;
         } else if (m.type === "IT-Officer") {
             if (m.score > maxSO) maxSO = m.score;
         }
     });
-    
+
     const avgPercentile = (sumPercentile / totalMocksCount).toFixed(2);
     const avgAccuracy = (sumAccuracy / totalMocksCount).toFixed(2);
     const avgDuration = (sumDuration / totalMocksCount).toFixed(0);
-    
+
     // Update labels
     if (dashAvgPercentile) dashAvgPercentile.innerText = `${avgPercentile}%`;
     if (dashAvgAccuracy) dashAvgAccuracy.innerText = `${avgAccuracy}%`;
     if (headerAvgPercentile) headerAvgPercentile.innerText = `${avgPercentile}%`;
-    
+
     if (summaryAvgTime) summaryAvgTime.innerText = `${avgDuration} mins`;
     if (summaryBestPrelim) summaryBestPrelim.innerText = maxPrelims > 0 ? `${maxPrelims} marks` : "N/A";
     if (summaryBestSO) summaryBestSO.innerText = maxSO > 0 ? `${maxSO} marks` : "N/A";
-    
+
     // AIR 10 standard check: Percentile >= 99.50% & Accuracy >= 90%
     const isPercentileAir10 = avgPercentile >= 99.50;
     const isAccuracyAir10 = avgAccuracy >= 90.00;
-    
+
     if (percentileStatus) {
         if (isPercentileAir10) {
             percentileStatus.innerHTML = `<i class="fa-solid fa-check-circle"></i> On Track for AIR 10`;
@@ -349,7 +356,7 @@ function updateDashboardMetrics() {
             percentileStatus.className = "metric-indicator text-danger";
         }
     }
-    
+
     if (accuracyStatus) {
         if (isAccuracyAir10) {
             accuracyStatus.innerHTML = `<i class="fa-solid fa-check-circle"></i> Good Accuracy`;
@@ -359,7 +366,7 @@ function updateDashboardMetrics() {
             accuracyStatus.className = "metric-indicator text-warning";
         }
     }
-    
+
     // Overall Track Indicator
     const ratingRing = document.getElementById("circle-overall-rating");
     const statusText = document.getElementById("overall-status-text");
@@ -382,7 +389,7 @@ function updateDashboardMetrics() {
             if (summaryPercentileStd) summaryPercentileStd.innerText = "Accuracy too low. Slow down Qs.";
         }
     }
-    
+
     renderChart(mocks);
     renderRecentMocksPanel(mocks);
     updateWeaknessTags(mocks);
@@ -391,9 +398,9 @@ function updateDashboardMetrics() {
 function updateWeaknessTags(mocks) {
     const container = document.getElementById("aggregated-weakness-tags");
     if (!container) return;
-    
+
     container.innerHTML = "";
-    
+
     // Scrape weakness keywords
     const keywords = [];
     mocks.forEach(m => {
@@ -407,12 +414,12 @@ function updateWeaknessTags(mocks) {
             }
         });
     });
-    
+
     if (keywords.length === 0) {
         container.innerHTML = `<p class="placeholder-text-small">No weaknesses logged yet</p>`;
         return;
     }
-    
+
     // Render up to 6 unique weakness tags
     keywords.slice(0, 6).forEach(word => {
         const tag = document.createElement("span");
@@ -443,60 +450,60 @@ function renderNoRecentMocks() {
 function renderChart(mocks) {
     const container = document.getElementById("mock-chart-container");
     if (!container) return;
-    
+
     container.innerHTML = "";
-    
+
     const chartG = document.createElement("div");
     chartG.className = "chart-visual-graph";
-    
+
     // Get last 7 mocks in chronologic order
     const displayed = mocks.slice(-7);
-    
+
     displayed.forEach((m, idx) => {
         const col = document.createElement("div");
         col.className = "chart-bar-col";
-        
+
         const pt = parseFloat(m.percentile);
-        
+
         const bar = document.createElement("div");
         bar.className = "chart-bar-fill";
         bar.style.height = `${pt * 0.95}%`; // limit to fit top padding
-        
+
         const tooltip = document.createElement("div");
         tooltip.className = "chart-bar-tooltip";
         tooltip.innerText = `${m.type} - P: ${m.percentile}% (S: ${m.score})`;
-        
+
         bar.appendChild(tooltip);
-        
+
         const label = document.createElement("div");
         label.className = "chart-bar-label";
         label.innerText = `M-${idx + 1}`;
-        
+
         col.appendChild(bar);
         col.appendChild(label);
         chartG.appendChild(col);
     });
-    
+
     container.appendChild(chartG);
 }
 
 function renderRecentMocksPanel(mocks) {
     const listContainer = document.getElementById("recent-mocks-list");
     if (!listContainer) return;
-    
+
     listContainer.innerHTML = "";
-    
+
     // Show last 3 mocks
     const recent = mocks.slice(-3).reverse();
     recent.forEach(m => {
         const item = document.createElement("div");
         item.className = "recent-mock-item";
-        
+
         const ptVal = parseFloat(m.percentile);
         let ptClass = "text-danger";
         if (ptVal >= 99.5) ptClass = "text-success";
         else if (ptVal >= 95.0) ptClass = "text-warning";
-        
+
         item.innerHTML = `
             <div class="mock-item-meta">
                 <span class="mock-item-title">${escapeHtml(m.source)} (${escapeHtml(m.type)})</span>
@@ -514,22 +521,22 @@ function renderRecentMocksPanel(mocks) {
 function populateHistoryTable() {
     const tableBody = document.querySelector("#mock-history-table tbody");
     if (!tableBody) return;
-    
+
     tableBody.innerHTML = "";
-    
+
     if (appState.mocks.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="10" class="text-center" style="color: var(--text-muted); font-size: 0.82rem;">No mock tests logged yet. Enter your scores above.</td></tr>`;
         return;
     }
-    
+
     // Display in reverse chronological order
     appState.mocks.slice().reverse().forEach((m, displayIdx) => {
         // Find true index in appState.mocks
         const originalIndex = appState.mocks.indexOf(m);
         const row = document.createElement("tr");
-        
+
         const cleanDate = new Date(m.date).toLocaleDateString("en-IN", { day: '2-digit', month: '2-digit' });
-        
+
         row.innerHTML = `
             <td>${cleanDate}</td>
             <td style="font-family: monospace; font-size: 0.72rem;">#${String(originalIndex + 1).padStart(3, '0')}</td>
@@ -548,7 +555,7 @@ function populateHistoryTable() {
         `;
         tableBody.appendChild(row);
     });
-    
+
     // Bind deletes
     document.querySelectorAll(".btn-delete-row").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -566,7 +573,7 @@ function populateHistoryTable() {
 
 function handleMockFormSubmit(e) {
     e.preventDefault();
-    
+
     const mockDate = document.getElementById("mock-date").value;
     const mockType = document.getElementById("mock-type").value;
     const mockSeries = document.getElementById("mock-series").value;
@@ -576,20 +583,20 @@ function handleMockFormSubmit(e) {
     const mockPercentile = parseFloat(document.getElementById("mock-percentile").value);
     const mockAccuracy = parseFloat(document.getElementById("mock-accuracy").value);
     const mockWeaknesses = document.getElementById("mock-weaknesses").value;
-    
+
     // Validation
     if (mockScore > mockTotal) {
         logEvent(`Error checking: Score (${mockScore}) cannot exceed Total Marks (${mockTotal})`, "error");
         alert("Input error: Score cannot exceed Total Marks.");
         return;
     }
-    
+
     if (mockPercentile < 0 || mockPercentile > 100 || mockAccuracy < 0 || mockAccuracy > 100) {
         logEvent(`Error checking: Percentile/Accuracy must be in range 0 - 100`, "error");
         alert("Input error: Percentile and Accuracy must be between 0 and 100.");
         return;
     }
-    
+
     const newMock = {
         date: mockDate || new Date().toISOString().split('T')[0],
         type: mockType,
@@ -601,12 +608,12 @@ function handleMockFormSubmit(e) {
         accuracy: mockAccuracy,
         weaknesses: mockWeaknesses
     };
-    
+
     appState.mocks.push(newMock);
     saveState();
-    
+
     logEvent(`Mock Test logged successfully: ${mockSeries} (${mockType}) - Score: ${mockScore}/${mockTotal}, Percentile: ${mockPercentile}%`, "success");
-    
+
     // Reset Form fields except date
     document.getElementById("mock-type").selectedIndex = 0;
     document.getElementById("mock-series").value = "";
@@ -616,7 +623,7 @@ function handleMockFormSubmit(e) {
     document.getElementById("mock-percentile").value = "";
     document.getElementById("mock-accuracy").value = "";
     document.getElementById("mock-weaknesses").value = "";
-    
+
     populateHistoryTable();
     updateDashboardMetrics();
 }
@@ -633,18 +640,18 @@ let activeQuestionIndex = 0;
 // Programmtically generated 50 item mock questions bank
 function createQuizQuestionBank() {
     const list = [];
-    
+
     // Let's populate 10 topics for each of the 5 sections
     for (let secIdx = 0; secIdx < 5; secIdx++) {
         const sectionName = SECTIONS[secIdx];
-        
+
         for (let qIdx = 0; qIdx < 10; qIdx++) {
             const questionNumber = secIdx * 10 + qIdx + 1;
             let query = "";
             let options = [];
             let correct = 0;
             let explanation = "";
-            
+
             if (sectionName === 'Quantitative Aptitude') {
                 if (qIdx === 0) {
                     query = "Find the next value in the given number pattern sequence: 8, 9, 20, 63, 256, ?";
@@ -759,7 +766,7 @@ function createQuizQuestionBank() {
                     explanation = "Searching in a balanced BST splits search scope in half at each step, yielding average time complexity of O(log n).";
                 }
             }
-            
+
             list.push({
                 index: questionNumber,
                 section: sectionName,
@@ -770,7 +777,7 @@ function createQuizQuestionBank() {
             });
         }
     }
-    
+
     return list;
 }
 
@@ -779,34 +786,34 @@ function startQuiz() {
     userAnswers = {};
     activeQuestionIndex = 0;
     timeRemainingSeconds = 2400; // 40 mins
-    
+
     document.getElementById("quiz-intro-state").classList.add("hidden");
     document.getElementById("quiz-active-state").classList.remove("hidden");
     document.getElementById("quiz-result-state").classList.add("hidden");
     document.getElementById("quiz-solutions-pane").classList.add("hidden");
-    
+
     initializeQuestionNavigator();
     showQuestion(0);
     startTimer();
-    
+
     logEvent("Daily 50-Q Timed Quiz started by user. 40 minutes remaining limit.", "info");
 }
 
 function startTimer() {
     if (quizTimerId) clearInterval(quizTimerId);
-    
+
     const displayEl = document.getElementById("timer-countdown");
-    
+
     quizTimerId = setInterval(() => {
         timeRemainingSeconds--;
-        
+
         let minutes = Math.floor(timeRemainingSeconds / 60);
         let seconds = timeRemainingSeconds % 60;
-        
+
         if (displayEl) {
             displayEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
-        
+
         if (timeRemainingSeconds <= 0) {
             clearInterval(quizTimerId);
             logEvent("Time limit exceeded. Submitting quiz answers automatically.", "warn");
@@ -825,9 +832,9 @@ function stopTimer() {
 function initializeQuestionNavigator() {
     const gridEl = document.getElementById("question-button-grid");
     if (!gridEl) return;
-    
+
     gridEl.innerHTML = "";
-    
+
     for (let index = 0; index < 50; index++) {
         const marker = document.createElement("div");
         marker.className = "grid-marker";
@@ -842,41 +849,41 @@ function initializeQuestionNavigator() {
 
 function showQuestion(index) {
     if (index < 0 || index >= 50) return;
-    
+
     activeQuestionIndex = index;
-    
+
     // Set active status to maps
     document.querySelectorAll(".grid-marker").forEach(m => m.classList.remove("active"));
     const marker = document.getElementById(`marker-btn-${index}`);
     if (marker) marker.classList.add("active");
-    
+
     // Load Question Info
     const q = activeQuizQuestions[index];
-    
+
     document.getElementById("q-subject").innerText = q.section;
     document.getElementById("q-text").innerText = `${q.index}. ${q.q}`;
-    
+
     // Load Options
     const optContainer = document.getElementById("q-options-list");
     optContainer.innerHTML = "";
-    
+
     const savedAnswer = userAnswers[index];
-    
+
     q.options.forEach((optText, optIdx) => {
         const btn = document.createElement("button");
         btn.className = `option-btn ${savedAnswer === optIdx ? 'selected' : ''}`;
         btn.innerText = optText;
-        
+
         btn.addEventListener("click", () => {
             selectOption(index, optIdx);
         });
-        
+
         optContainer.appendChild(btn);
     });
-    
+
     // Update Question Counter Layout
     document.getElementById("quiz-question-counter").innerText = `Question ${index + 1} of 50`;
-    
+
     // Progress bar marker
     const prog = document.getElementById("quiz-progress-marker");
     if (prog) prog.style.width = `${((index + 1) / 50) * 100}%`;
@@ -884,21 +891,21 @@ function showQuestion(index) {
 
 function selectOption(qIdx, optIdx) {
     userAnswers[qIdx] = optIdx;
-    
+
     // Re-highlight option buttons in UI
     const btns = document.querySelectorAll("#q-options-list .option-btn");
     btns.forEach((btn, idx) => {
         if (idx === optIdx) btn.classList.add("selected");
         else btn.classList.remove("selected");
     });
-    
+
     // Update navigator marker class
     const marker = document.getElementById(`marker-btn-${qIdx}`);
     if (marker) {
         marker.classList.remove("skipped");
         marker.classList.add("answered");
     }
-    
+
     logEvent(`Selected Option ${String.fromCharCode(65 + optIdx)} for Question #${qIdx + 1}`, "info");
 }
 
@@ -919,12 +926,12 @@ function skipQuestion() {
 
 function submitQuiz(auto = false) {
     stopTimer();
-    
+
     // Compile scorecard
     let correctCount = 0;
     let incorrectCount = 0;
     let unansweredCount = 0;
-    
+
     const sectionalScores = {
         'Quantitative Aptitude': 0,
         'Reasoning Ability': 0,
@@ -932,7 +939,7 @@ function submitQuiz(auto = false) {
         'General Awareness': 0,
         'Specialist IT Officer': 0
     };
-    
+
     activeQuizQuestions.forEach((q, idx) => {
         const uAns = userAnswers[idx];
         if (uAns === undefined) {
@@ -944,36 +951,36 @@ function submitQuiz(auto = false) {
             incorrectCount++;
         }
     });
-    
+
     // Negative marks of -0.25 standard limit
     const totalScore = parseFloat((correctCount - (incorrectCount * 0.25)).toFixed(2));
     const timeSpentMins = Math.ceil((2400 - timeRemainingSeconds) / 60);
-    
+
     // Save to daily state
     let streakCount = parseInt(localStorage.getItem('air10_quiz_streak') || '0');
     streakCount++;
     localStorage.setItem('air10_quiz_streak', String(streakCount));
-    
+
     const streakEl = document.getElementById("quiz-streak");
     if (streakEl) streakEl.innerText = `${streakCount} days`;
-    
+
     // Draw scorecard screen
     document.getElementById("quiz-active-state").classList.add("hidden");
     document.getElementById("quiz-result-state").classList.remove("hidden");
-    
+
     // Adjust scoring texts
     const titleEl = document.getElementById("result-status-title");
     const summaryEl = document.getElementById("result-scoring-summary");
     const badgeIcon = document.getElementById("quiz-achievement-badge");
-    
+
     if (titleEl) {
         titleEl.innerText = auto ? "Time Expired! Quiz Submitted" : "Quiz Completed!";
     }
-    
+
     if (summaryEl) {
         summaryEl.innerHTML = `You scored <strong>${totalScore}</strong> out of 50. Correct: ${correctCount} | Incorrect: ${incorrectCount} | Skipped: ${unansweredCount}. Time taken: ${timeSpentMins} minutes.`;
     }
-    
+
     // Achievement indicator
     if (badgeIcon) {
         if (totalScore >= 42.0) {
@@ -988,7 +995,7 @@ function submitQuiz(auto = false) {
             badgeIcon.innerHTML = `<i class="fa-solid fa-brain"></i>`;
         }
     }
-    
+
     // Sectional markup
     const sectionContainer = document.getElementById("sectional-score-container");
     if (sectionContainer) {
@@ -1004,10 +1011,10 @@ function submitQuiz(auto = false) {
             sectionContainer.appendChild(div);
         });
     }
-    
+
     // Load Solutions List
     populateSolutionsPanel();
-    
+
     logEvent(`Quiz performance evaluation: Score = ${totalScore}/50. Correct = ${correctCount}. Persistence complete.`, "success");
 }
 
@@ -1015,20 +1022,20 @@ function populateSolutionsPanel() {
     const listEl = document.getElementById("solutions-list-content");
     const containerEl = document.getElementById("quiz-solutions-pane");
     if (!listEl || !containerEl) return;
-    
+
     listEl.innerHTML = "";
     containerEl.classList.remove("hidden");
-    
+
     activeQuizQuestions.forEach((q, idx) => {
         const item = document.createElement("div");
         item.className = "sol-item";
-        
+
         const uAns = userAnswers[idx];
         const isCorrect = uAns === q.correctAnswer;
-        
+
         let verdictClass = "sol-verdict-incorrect";
         let verdictText = `Incorrect (Your choice: Option ${String.fromCharCode(65 + uAns)})`;
-        
+
         if (uAns === undefined) {
             verdictClass = "sol-verdict-skipped";
             verdictText = "Skipped / Unanswered";
@@ -1036,7 +1043,7 @@ function populateSolutionsPanel() {
             verdictClass = "sol-verdict-correct";
             verdictText = "Correct Answer";
         }
-        
+
         item.innerHTML = `
             <div class="sol-header">
                 <span class="badge ${isCorrect ? 'badge-success' : 'badge-danger'}">Question ${q.index}</span>
@@ -1061,18 +1068,18 @@ function populateSolutionsPanel() {
 function initializeDailyChecklist() {
     const listContainer = document.getElementById("drill-list-content");
     if (!listContainer) return;
-    
+
     listContainer.innerHTML = "";
-    
+
     let checkedCount = 0;
-    
+
     DRILLS_STEPS.forEach((drill, index) => {
         const isChecked = !!appState.dailyDrills.drills[index];
         if (isChecked) checkedCount++;
-        
+
         const item = document.createElement("div");
         item.className = `drill-item ${isChecked ? 'checked' : ''}`;
-        
+
         item.innerHTML = `
             <div class="drill-item-text">
                 <div class="drill-title">${drill.title}</div>
@@ -1082,31 +1089,31 @@ function initializeDailyChecklist() {
         `;
         listContainer.appendChild(item);
     });
-    
+
     updateDrillsProgressBar(checkedCount);
-    
+
     // Bind click checks
     document.querySelectorAll(".drill-checkbox").forEach(chk => {
         chk.addEventListener("change", (e) => {
             const idx = parseInt(e.target.dataset.index);
             const isChecked = e.target.checked;
-            
+
             appState.dailyDrills.drills[idx] = isChecked;
             appState.dailyDrills.lastCheckedDate = new Date().toDateString();
-            
+
             saveState();
-            
+
             const parent = e.target.closest(".drill-item");
             if (parent) {
                 if (isChecked) parent.classList.add("checked");
                 else parent.classList.remove("checked");
             }
-            
+
             // Recompute checked counts
             let countTotal = 0;
             appState.dailyDrills.drills.forEach(d => { if (d) countTotal++; });
             updateDrillsProgressBar(countTotal);
-            
+
             logEvent(`Daily Drill: "${DRILLS_STEPS[idx].title}" marked as ${isChecked ? 'COMPLETED' : 'PENDING'}`, "info");
         });
     });
@@ -1116,9 +1123,9 @@ function updateDrillsProgressBar(checkedCount) {
     const totalDrills = DRILLS_STEPS.length;
     const ratioEl = document.getElementById("drills-ratio");
     const barEl = document.getElementById("drills-progress-bar");
-    
+
     if (ratioEl) ratioEl.innerText = `${checkedCount}/${totalDrills}`;
-    
+
     if (barEl) {
         const percent = Math.round((checkedCount / totalDrills) * 100);
         barEl.style.width = `${percent}%`;
@@ -1138,7 +1145,7 @@ function resetDailyChecklist() {
 /* Nav Tab Routing System */
 function setActiveTab(targetTab) {
     logEvent(`Navigating menu: switching active page view to "${targetTab}"`, "info");
-    
+
     // Update Menu selection class
     document.querySelectorAll(".menu-item").forEach(item => {
         if (item.dataset.tab === targetTab) {
@@ -1147,7 +1154,7 @@ function setActiveTab(targetTab) {
             item.classList.remove("active");
         }
     });
-    
+
     // Toggle Content boxes
     document.querySelectorAll(".tab-content").forEach(tab => {
         if (tab.id === `${targetTab}-tab`) {
@@ -1156,7 +1163,7 @@ function setActiveTab(targetTab) {
             tab.classList.add("hidden");
         }
     });
-    
+
     // Context-specific loads
     if (targetTab === "mock-tracker") {
         populateHistoryTable();
@@ -1164,12 +1171,131 @@ function setActiveTab(targetTab) {
 }
 
 /* Data backup utilities */
+/* Data backup & Sync utilities */
+async function linkLocalFile() {
+    try {
+        const options = {
+            suggestedName: 'timetable_data.json',
+            types: [{
+                description: 'JSON Files',
+                accept: {
+                    'application/json': ['.json'],
+                },
+            }],
+        };
+        fileHandle = await window.showSaveFilePicker(options);
+        logEvent("Linked local file: " + fileHandle.name, "success");
+        updateSyncStatus();
+
+        // Write current state immediately
+        await writeStateToLinkedFile();
+    } catch (err) {
+        if (err.name !== 'AbortError') {
+            logEvent("Failed to link file: " + err.message, "error");
+            alert("Error linking file: " + err.message);
+        }
+    }
+}
+
+async function writeStateToLinkedFile() {
+    if (!fileHandle) return;
+    try {
+        const options = { mode: 'readwrite' };
+        if (await fileHandle.queryPermission(options) !== 'granted') {
+            if (await fileHandle.requestPermission(options) !== 'granted') {
+                logEvent("Write permission denied by user", "warn");
+                return;
+            }
+        }
+        const writable = await fileHandle.createWritable();
+        const cleanState = {
+            mocks: appState.mocks,
+            timetableStatus: appState.timetableStatus,
+            dailyDrills: appState.dailyDrills
+        };
+        await writable.write(JSON.stringify(cleanState, null, 2));
+        await writable.close();
+        logEvent("Synchronized local file backup: " + fileHandle.name, "success");
+        updateSyncStatus();
+    } catch (err) {
+        logEvent("Failed to sync file content: " + err.message, "error");
+    }
+}
+
+function updateSyncStatus() {
+    const el = document.getElementById("sync-file-status");
+    const syncBtn = document.getElementById("btn-sync-file");
+    const linkBtn = document.getElementById("btn-link-file");
+    if (!el) return;
+
+    if (fileHandle) {
+        el.innerHTML = `<span style="color: #34d399;"><i class="fa-solid fa-cloud-arrow-up"></i> Linked: ${fileHandle.name}</span>`;
+        if (syncBtn) syncBtn.classList.remove("hidden");
+        if (linkBtn) linkBtn.innerHTML = `<i class="fa-solid fa-link-slash"></i> Unlink Git File`;
+    } else {
+        el.innerHTML = `<span style="color: var(--text-muted);"><i class="fa-solid fa-cloud"></i> No file linked</span>`;
+        if (syncBtn) syncBtn.classList.add("hidden");
+        if (linkBtn) linkBtn.innerHTML = `<i class="fa-solid fa-link"></i> Link Git File`;
+    }
+}
+
+function handleLinkToggle() {
+    if (fileHandle) {
+        fileHandle = null;
+        logEvent("Local file unlink confirmed.", "info");
+        updateSyncStatus();
+    } else {
+        linkLocalFile();
+    }
+}
+
+function importDataFromFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        safeExecute(() => {
+            const rawData = JSON.parse(e.target.result);
+            if (!rawData || (typeof rawData !== 'object')) {
+                throw new Error("Invalid file content formatting. Check failed.");
+            }
+
+            if (rawData.timetableStatus) appState.timetableStatus = rawData.timetableStatus;
+            if (rawData.mocks) appState.mocks = rawData.mocks;
+            if (rawData.dailyDrills) appState.dailyDrills = rawData.dailyDrills;
+
+            // Save state to LOCALSTORAGE
+            localStorage.setItem('air10_timetable_status', JSON.stringify(appState.timetableStatus));
+            localStorage.setItem('air10_mocks', JSON.stringify(appState.mocks));
+            localStorage.setItem('air10_drills', JSON.stringify(appState.dailyDrills));
+
+            logEvent("State imported and loaded successfully from " + file.name, "success");
+
+            // Re-render components
+            initializeTimetable();
+            initializeDailyChecklist();
+            updateDashboardMetrics();
+            populateHistoryTable();
+
+            // Clear file input value
+            event.target.value = '';
+        }, "ImportJSONFileContent");
+    };
+    reader.readAsText(file);
+}
+
 function exportData() {
     safeExecute(() => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+        const cleanState = {
+            mocks: appState.mocks,
+            timetableStatus: appState.timetableStatus,
+            dailyDrills: appState.dailyDrills
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cleanState));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `air10_study_backup_${new Date().toISOString().split('T')[0]}.json`);
+        downloadAnchor.setAttribute("download", `timetable_data.json`);
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
@@ -1186,14 +1312,14 @@ function clearAllAppData() {
             lastCheckedDate: new Date().toDateString(),
             drills: [false, false, false, false, false]
         };
-        
+
         logEvent("Cleared all browser local data memory registers", "warn");
-        
+
         initializeTimetable();
         initializeDailyChecklist();
         updateDashboardMetrics();
         populateHistoryTable();
-        
+
         // Reset streak HTML
         localStorage.setItem('air10_quiz_streak', '0');
         const streakEl = document.getElementById("quiz-streak");
@@ -1204,21 +1330,21 @@ function clearAllAppData() {
 /* Page Boot initialization bindings */
 document.addEventListener("DOMContentLoaded", () => {
     logEvent("System booting. Booting database controllers. Target: AIR 10 PO & SO IT.", "info");
-    
+
     loadState();
-    
+
     // Bind Form Submit
     const logForm = document.getElementById("mock-log-form");
     if (logForm) {
         logForm.addEventListener("submit", handleMockFormSubmit);
     }
-    
+
     // Pre-populate input mock date
     const dateInput = document.getElementById("mock-date");
     if (dateInput) {
         dateInput.value = new Date().toISOString().split('T')[0];
     }
-    
+
     // Bind Tab Click events
     document.querySelectorAll(".menu-item").forEach(item => {
         item.addEventListener("click", (e) => {
@@ -1227,13 +1353,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (tabName) setActiveTab(tabName);
         });
     });
-    
+
     // Bind Drill reset
     const resetDrillsBtn = document.getElementById("btn-reset-drills");
     if (resetDrillsBtn) {
         resetDrillsBtn.addEventListener("click", resetDailyChecklist);
     }
-    
+
     // Bind Timetable filters
     document.querySelectorAll("[data-timetable-filter]").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -1244,14 +1370,23 @@ document.addEventListener("DOMContentLoaded", () => {
             logEvent(`Filtered active timetable: displaying "${filter}" days`, "info");
         });
     });
-    
+
     // Bind Utility buttons
+    const linkBtn = document.getElementById("btn-link-file");
+    if (linkBtn) linkBtn.addEventListener("click", handleLinkToggle);
+
+    const syncBtn = document.getElementById("btn-sync-file");
+    if (syncBtn) syncBtn.addEventListener("click", writeStateToLinkedFile);
+
+    const importInput = document.getElementById("input-import-file");
+    if (importInput) importInput.addEventListener("change", importDataFromFile);
+
     const exportBtn = document.getElementById("btn-export-data");
     if (exportBtn) exportBtn.addEventListener("click", exportData);
-    
+
     const clearBtn = document.getElementById("btn-clear-logs");
     if (clearBtn) clearBtn.addEventListener("click", clearAllAppData);
-    
+
     const clearSysLogBtn = document.getElementById("btn-clear-sys-logs");
     if (clearSysLogBtn) {
         clearSysLogBtn.addEventListener("click", () => {
@@ -1263,20 +1398,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-    
+
     // Quiz bindings
     const startQuizBtn = document.getElementById("btn-start-quiz");
     if (startQuizBtn) startQuizBtn.addEventListener("click", startQuiz);
-    
+
     const prevQBtn = document.getElementById("btn-prev-question");
     if (prevQBtn) prevQBtn.addEventListener("click", () => navigateQuestion(-1));
-    
+
     const nextQBtn = document.getElementById("btn-next-question");
     if (nextQBtn) nextQBtn.addEventListener("click", () => navigateQuestion(1));
-    
+
     const skipQBtn = document.getElementById("btn-skip-question");
     if (skipQBtn) skipQBtn.addEventListener("click", skipQuestion);
-    
+
     const submitBtn = document.getElementById("btn-submit-quick");
     if (submitBtn) {
         submitBtn.addEventListener("click", () => {
@@ -1285,10 +1420,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-    
+
     const restartQuizBtn = document.getElementById("btn-restart-quiz-system");
     if (restartQuizBtn) restartQuizBtn.addEventListener("click", startQuiz);
-    
+
     const viewSolutionsBtn = document.getElementById("btn-view-explanations");
     if (viewSolutionsBtn) {
         viewSolutionsBtn.addEventListener("click", () => {
@@ -1298,18 +1433,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-    
+
     // Quiz streak setup
     const streakCount = parseInt(localStorage.getItem('air10_quiz_streak') || '0');
     const streakEl = document.getElementById("quiz-streak");
     if (streakEl) streakEl.innerText = `${streakCount} days`;
-    
+
     // Setup and render UI elements
     initializeTimetable();
     initializeDailyChecklist();
     updateDashboardMetrics();
     populateHistoryTable();
-    
+
     // Calculate initial countdown info
     const targetExamDate = new Date(2026, 7, 15); // Aug 15, 2026 (index 7 = Aug)
     const timeDelta = targetExamDate.getTime() - new Date().getTime();

@@ -337,8 +337,25 @@
                 <!-- Complete Mock log History -->
                 <div class="card glass-card table-card print-block">
                     <div class="card-header-flex">
-                        <h3>Mock Test History logs</h3>
+                        <h3>Mock Test History logs <span id="sync-file-status"
+                                style="margin-left: 8px; font-size: 0.72rem; font-weight: normal; color: var(--text-muted);"></span>
+                        </h3>
                         <div class="header-buttons">
+                            <button id="btn-link-file" class="btn btn-sm btn-outline"
+                                title="Link a local file in your repository to auto-sync.">
+                                <i class="fa-solid fa-link"></i> Link Git File
+                            </button>
+                            <button id="btn-sync-file" class="btn btn-sm btn-success hidden"
+                                title="Force write sync current data to linked file.">
+                                <i class="fa-solid fa-arrows-rotate"></i> Sync File
+                            </button>
+                            <label for="input-import-file" class="btn btn-sm btn-outline"
+                                style="cursor: pointer; margin-bottom: 0;"
+                                title="Import backup JSON file to restore state.">
+                                <i class="fa-solid fa-file-import"></i> Load Git File
+                            </label>
+                            <input type="file" id="input-import-file" accept=".json" style="display: none;">
+
                             <button id="btn-export-data" class="btn btn-sm btn-outline">
                                 <i class="fa-solid fa-file-export"></i> Backup Logs
                             </button>
