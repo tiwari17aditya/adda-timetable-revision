@@ -1,0 +1,41 @@
+name: Deploy Static Dashboard to Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+# Allocate permissions required for GitHub Pages deployments
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent concurrent runs blocking deployments
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages Settings
+        uses: actions/configure-pages@v4
+
+      - name: Upload HTML Site Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire directory contents
+          path: '.'
+
+      - name: Deploy to GitHub Pages Host
+        id: deployment
+        uses: actions/deploy-pages@v4

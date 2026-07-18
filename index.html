@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIR 10: Banking Exam 2026 Revision & Mock Dashboard</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-crown gold-glow"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>TARGET AIR 10</h2>
+                    <span>Banking Exams 2026</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="menu-item" data-tab="timetable">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Revision Timetable</span>
+                </a>
+                <a href="#" class="menu-item" data-tab="mock-tracker">
+                    <i class="fa-solid fa-square-poll-vertical"></i>
+                    <span>Mock Tests Tracker</span>
+                </a>
+                <a href="#" class="menu-item" data-tab="daily-quiz">
+                    <i class="fa-solid fa-stopwatch"></i>
+                    <span>Daily 50-Q Quiz</span>
+                </a>
+                <a href="#" class="menu-item" data-tab="resources">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span>IT & GA Reference</span>
+                </a>
+                <a href="#" class="menu-item" data-tab="checklist">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Daily Drills</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="target-badge">
+                    <div class="badge-header">PO & SO IT Officer</div>
+                    <div class="badge-sub">Exam: Mid-August 2026</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Dashboard Header with Quick KPI Stats -->
+            <header class="app-header">
+                <div class="header-welcome">
+                    <h1>Targeting Rank Under 10</h1>
+                    <p>"Consistency beats talent. Precision beats effort." — Revision Tracker</p>
+                </div>
+
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <span class="stat-label">Days to Mid-August</span>
+                        <div class="stat-value" id="days-remaining">28</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Mocks Logged</span>
+                        <div class="stat-value" id="mocks-logged-count">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-img-indicator">Avg Percentile</span>
+                        <div class="stat-value text-accent" id="average-percentile-badge">0.0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Quiz Streak</span>
+                        <div class="stat-value text-success" id="quiz-streak">0 days</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content Container (Tabs) -->
+            <div class="tab-content" id="dashboard-tab">
+                <!-- Dashboard Welcome Banner -->
+                <div class="dashboard-grid">
+                    <!-- Progress Card -->
+                    <div class="card glass-card span-2">
+                        <h3>Preparation Status & Track to AIR 10</h3>
+                        <p class="card-subtitle">Keep your average percentile above 99.5% to guarantee a top-tier rank.
+                        </p>
+
+                        <div class="progress-container-main">
+                            <div class="progress-header">
+                                <span>Overall Timetable Completion</span>
+                                <span id="timetable-completion-percentage">0%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="timetable-completion-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <span class="metric-label">Target Percentile</span>
+                                <span class="metric-val">&ge; 99.50%</span>
+                                <span class="metric-indicator text-success"><i class="fa-solid fa-check-circle"></i> Air
+                                    10 Zone</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-label">Actual Avg Percentile</span>
+                                <span class="metric-val" id="dashboard-avg-percentile">N/A</span>
+                                <span class="metric-indicator" id="dashboard-percentile-status">No mocks logged</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-label">Target Accuracy</span>
+                                <span class="metric-val">&ge; 90.0%</span>
+                                <span class="metric-indicator text-success"><i class="fa-solid fa-check-circle"></i>
+                                    Speed & Accuracy</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-label">Actual Average Accuracy</span>
+                                <span class="metric-val" id="dashboard-avg-accuracy">N/A</span>
+                                <span class="metric-indicator" id="dashboard-accuracy-status">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Targets Card -->
+                    <div class="card glass-card">
+                        <h3>AIR 10 Action Checklist</h3>
+                        <ul class="air10-checklist">
+                            <li><span class="badge badge-accent">Daily</span> Log at least 2 mock tests + detail
+                                analysis.</li>
+                            <li><span class="badge badge-primary">Daily</span> Attempt Timed 50-Q Quiz in 40 mins.</li>
+                            <li><span class="badge badge-success">Daily</span> Complete Quant/Reasoning and SO IT
+                                syllabus items.</li>
+                            <li><span class="badge badge-warning">Weekly</span> Dedicate Sunday to light revision, weak
+                                analysis & rest.</li>
+                        </ul>
+                        <div class="quote-container">
+                            <p class class="bold-text">"The difference between rank 100 and rank 1 is not knowledge.
+                                It's the analysis of mistakes."</p>
+                        </div>
+                    </div>
+
+                    <!-- Revision Progress by Topics -->
+                    <div class="card glass-card span-2">
+                        <h3>Mock performance chart</h3>
+                        <p class="card-subtitle">Performance trajectory for logged exams (Targeting 99.5% Percentile)
+                        </p>
+                        <div class="mock-chart-placeholder" id="mock-chart-container">
+                            <div class="no-data-render">
+                                <i class="fa-solid fa-chart-line-down"
+                                    style="font-size: 3rem; opacity: 0.3; margin-bottom: 10px;"></i>
+                                <p>No data recorded yet. Log your first mock test to see your score trajectory!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Mock Logs (Quick View) -->
+                    <div class="card glass-card">
+                        <h3>Recent Mock Logs</h3>
+                        <div class="recent-mocks-list" id="recent-mocks-list">
+                            <p class="placeholder-text text-center">No tests logged yet.</p>
+                        </div>
+                    </div>
+
+                    <!-- System Log Console -->
+                    <div class="card glass-card span-3" id="system-log-card">
+                        <div class="card-header-flex">
+                            <h3><i class="fa-solid fa-terminal text-accent"></i> System Event Logs</h3>
+                            <button id="btn-clear-sys-logs" class="btn btn-sm btn-outline"><i
+                                    class="fa-solid fa-rectangle-xmark"></i> Clear Console</button>
+                        </div>
+                        <div class="sys-log-console" id="sys-log-console">
+                            <div class="log-row info">
+                                <span class="log-time">[11:39:18]</span>
+                                <span class="log-msg">Initialize System - Bank Revision App v1.0.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timetable Tab -->
+            <div class="tab-content hidden" id="timetable-tab">
+                <div class="section-header">
+                    <h2>Revision Timetable (July 18 - August 15)</h2>
+                    <div class="timetable-actions">
+                        <div class="filter-group">
+                            <button class="btn btn-sm btn-outline active" data-timetable-filter="all">All Days</button>
+                            <button class="btn btn-sm btn-outline" data-timetable-filter="pending">Pending</button>
+                            <button class="btn btn-sm btn-outline" data-timetable-filter="completed">Completed</button>
+                        </div>
+                        <button class="btn btn-outline btn-sm print-hide" onclick="window.print()">
+                            <i class="fa-solid fa-print"></i> Print Planner
+                        </button>
+                    </div>
+                </div>
+
+                <div class="timetable-grid" id="timetable-grid-content">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Mock Tracker Tab -->
+            <div class="tab-content hidden" id="mock-tracker-tab">
+                <div class="grid-2col">
+                    <!-- Mock Form -->
+                    <div class="card glass-card">
+                        <h3>Log Mock Test Result</h3>
+                        <p class="card-subtitle">Log your 2 daily mock exams here. Monitor time and focus areas closely.
+                        </p>
+
+                        <form id="mock-log-form" class="standard-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mock-date">Test Date</label>
+                                    <input type="date" id="mock-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mock-type">Exam Type</label>
+                                    <select id="mock-type" required>
+                                        <option value="Prelims">PO Prelims</option>
+                                        <option value="Mains">PO Mains</option>
+                                        <option value="IT-Officer">SO IT Officer</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mock-series">Test Series Source</label>
+                                    <input type="text" id="mock-series" placeholder="e.g. Adda247, Testbook, Oliveboard"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mock-duration">Time Taken (Minutes)</label>
+                                    <input type="number" id="mock-duration" min="1" max="180" placeholder="e.g. 60"
+                                        required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mock-score">Score Obtained</label>
+                                    <input type="number" step="0.25" id="mock-score" placeholder="e.g. 78.5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mock-total">Total Marks</label>
+                                    <input type="number" id="mock-total" placeholder="e.g. 100" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mock-percentile">Percentile (%)</label>
+                                    <input type="number" step="0.01" id="mock-percentile" min="0" max="100"
+                                        placeholder="e.g. 99.85" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mock-accuracy">Accuracy (%)</label>
+                                    <input type="number" step="0.01" id="mock-accuracy" min="0" max="100"
+                                        placeholder="e.g. 94.2" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="mock-weaknesses">Key Mistakes & Focus Areas (Critically analyzed)</label>
+                                <textarea id="mock-weaknesses" rows="3"
+                                    placeholder="Explain the key mistakes: e.g. Silly error in DI, skipped OS CPU scheduling questions, need to speed up logic puzzles."
+                                    required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">Log Performance</button>
+                        </form>
+                    </div>
+
+                    <!-- Performance Analysis & Scorecard -->
+                    <div class="card glass-card">
+                        <h3>Rank Indicator & Analytics</h3>
+                        <p class="card-subtitle">AIR 10 requires target accuracy &ge; 90% and percentile &ge; 99.5%.</p>
+
+                        <div class="analysis-card">
+                            <div class="metric-circle-container">
+                                <div class="metric-circle" id="circle-overall-rating">
+                                    <span class="circle-val" id="overall-status-text">Ready</span>
+                                    <span class="circle-desc">Performance Track</span>
+                                </div>
+                            </div>
+
+                            <div class="stats-breakdown-list">
+                                <div class="breakdown-item">
+                                    <span>Average Speed (Minutes/Mock):</span>
+                                    <strong id="analytics-avg-time">N/A</strong>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Best Score (Prelims):</span>
+                                    <strong id="analytics-best-prelims">N/A</strong>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Best Score (IT SO):</span>
+                                    <strong id="analytics-best-so">N/A</strong>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span>Percentile standard:</span>
+                                    <strong id="analytics-percentile-standard">No Mocks logged</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="critical-weakness-summary">
+                            <h4>Aggregated Areas of Improvement</h4>
+                            <div class="tag-container" id="aggregated-weakness-tags">
+                                <p class="placeholder-text-small">Weakness tags will spawn here based on your logged
+                                    tests.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complete Mock log History -->
+                <div class="card glass-card table-card print-block">
+                    <div class="card-header-flex">
+                        <h3>Mock Test History logs</h3>
+                        <div class="header-buttons">
+                            <button id="btn-export-data" class="btn btn-sm btn-outline">
+                                <i class="fa-solid fa-file-export"></i> Backup Logs
+                            </button>
+                            <button id="btn-clear-logs" class="btn btn-sm btn-danger active-state">
+                                <i class="fa-solid fa-trash"></i> Reset Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table" id="mock-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Mock ID</th>
+                                    <th>Type</th>
+                                    <th>Source</th>
+                                    <th>Score</th>
+                                    <th>Percentile</th>
+                                    <th>Accuracy</th>
+                                    <th>Timing</th>
+                                    <th>Weakness Notes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded dynamically via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily timed 50-Q quiz Tab -->
+            <div class="tab-content hidden" id="daily-quiz-tab">
+                <div class="grid-3col">
+                    <!-- Quiz Controller / Start Interface -->
+                    <div class="card glass-card span-2" id="quiz-workspace">
+                        <div id="quiz-intro-state">
+                            <div class="welcome-quiz text-center">
+                                <div class="large-icon-bg">
+                                    <i class="fa-solid fa-stopwatch text-accent animate-pulse"></i>
+                                </div>
+                                <h2>Interactive Timed Practice Room</h2>
+                                <p class="card-subtitle leading-relaxed">
+                                    Pressure test your preparation with <strong>50 mixed questions</strong> covering
+                                    Quant, Reasoning, English, General Awareness, and Specialist IT Officer topics.
+                                </p>
+
+                                <ul class="quiz-guidelines">
+                                    <li><i class="fa-solid fa-circle-check text-accent"></i> <strong>50
+                                            Questions</strong> (10 Quant, 10 Reasoning, 10 English, 10 General
+                                        Awareness, 10 IT Professional Knowledge).</li>
+                                    <li><i class="fa-solid fa-clock text-accent"></i> <strong>40 Minutes Hard
+                                            Limit</strong>. Auto-submit when time expires.</li>
+                                    <li><i class="fa-solid fa-star text-accent"></i> <strong>AIR 10 Criteria</strong>:
+                                        Score 42+ (~84%) under pressure.</li>
+                                    <li><i class="fa-solid fa-clipboard text-accent"></i> Interactive review of answers
+                                        & key notes post-attempt.</li>
+                                </ul>
+
+                                <button id="btn-start-quiz" class="btn btn-primary btn-large">
+                                    <i class="fa-solid fa-play"></i> Start 50-Q Timed Quiz
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Quiz State -->
+                        <div id="quiz-active-state" class="hidden">
+                            <div class="quiz-header-bar">
+                                <div class="quiz-progress-stats">
+                                    <span class="badge badge-accent">Active Quiz</span>
+                                    <span id="quiz-question-counter">Question 1 of 50</span>
+                                </div>
+                                <div class="quiz-timer-box" id="quiz-timer-display">
+                                    <i class="fa-solid fa-clock text-accent"></i> <span
+                                        id="timer-countdown">40:00</span>
+                                </div>
+                            </div>
+
+                            <div class="quiz-progress-bar-container">
+                                <div class="quiz-progress-bar" id="quiz-progress-marker" style="width: 2%;"></div>
+                            </div>
+
+                            <!-- Question Card -->
+                            <div class="question-card" id="question-card-box">
+                                <div class="question-subject" id="q-subject">Quantitative Aptitude</div>
+                                <div class="question-text" id="q-text">Find the next term in the series: 8, 9, 20, 63,
+                                    256, ?</div>
+
+                                <div class="options-container" id="q-options-list">
+                                    <!-- Options populated dynamically -->
+                                    <button class="option-btn">A. 1285</button>
+                                    <button class="option-btn">B. 1280</button>
+                                    <button class="option-btn">C. 1290</button>
+                                    <button class="option-btn">D. 1295</button>
+                                </div>
+                            </div>
+
+                            <!-- Navigation buttons -->
+                            <div class="quiz-nav-row">
+                                <button id="btn-prev-question" class="btn btn-outline"><i
+                                        class="fa-solid fa-arrow-left"></i> Previous</button>
+                                <button id="btn-skip-question" class="btn btn-outline">Flag/Skip</button>
+                                <button id="btn-next-question" class="btn btn-primary">Next <i
+                                        class="fa-solid fa-arrow-right"></i></button>
+                                <button id="btn-submit-quick" class="btn btn-success">Submit Quiz</button>
+                            </div>
+                        </div>
+
+                        <!-- Quiz Result/Review State -->
+                        <div id="quiz-result-state" class="hidden">
+                            <div class="text-center result-badge-container">
+                                <div class="badge-air10-result" id="quiz-achievement-badge">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <h2 id="result-status-title">Quiz Submitted!</h2>
+                                <p id="result-scoring-summary">You scored 38.5 out of 50 marks. Time taken: 32 minutes.
+                                </p>
+
+                                <div class="quiz-sectional-scores" id="sectional-score-container">
+                                    <!-- Filled dynamically -->
+                                </div>
+
+                                <div class="actions-row">
+                                    <button id="btn-view-explanations" class="btn btn-primary">
+                                        <i class="fa-regular fa-eye"></i> View Detailed Solutions
+                                    </button>
+                                    <button id="btn-restart-quiz-system" class="btn btn-outline">
+                                        <i class="fa-solid fa-rotate-left"></i> Try Another Quiz
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Navigator Side Panel -->
+                    <div class="card glass-card" id="quiz-side-panel">
+                        <h3>Question Grid</h3>
+                        <div class="quiz-side-stats">
+                            <span class="legend-box legend-answered">Answered</span>
+                            <span class="legend-box legend-skipped">Skipped</span>
+                            <span class="legend-box legend-unvisited">Unvisited</span>
+                        </div>
+                        <div class="question-grid-map" id="question-button-grid">
+                            <!-- Populated with 50 indicators -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed solutions and answer keys -->
+                <div class="card glass-card hidden" id="quiz-solutions-pane">
+                    <h3>Detailed Solutions & Revision Explanations</h3>
+                    <div class="solutions-list" id="solutions-list-content">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- IT & GA Reference Center -->
+            <div class="tab-content hidden" id="resources-tab">
+                <div class="section-header">
+                    <h2>IT Officer Professional Knowledge & Banking GA Core Notes</h2>
+                    <p class="subtitle_text">Quick revision notes on most-tested topics (DBMS, OS, CN, QA formulas, GA
+                        Bulletins).</p>
+                </div>
+
+                <div class="grid-2col">
+                    <div class="card glass-card">
+                        <div class="tab-sub-header">
+                            <h3><i class="fa-solid fa-server text-accent"></i> DBMS Core Revision Sheet</h3>
+                        </div>
+                        <div class="notes-body">
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">ACID Properties</h4>
+                                <ul>
+                                    <li><strong>Atomicity:</strong> All operations copy or none. (Managed by Transaction
+                                        Manager / Log Recovery).</li>
+                                    <li><strong>Consistency:</strong> Database transitions from one valid state to
+                                        another.</li>
+                                    <li><strong>Isolation:</strong> Transactions execute concurrently without
+                                        interference. (Concurrency Control: 2-Phase Locking - 2PL, Timestamp Ordering).
+                                    </li>
+                                    <li><strong>Durability:</strong> Updates persist after commit (Recovery Manager -
+                                        Write Ahead Logging / WAL, Checkpointing).</li>
+                                </ul>
+                            </div>
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle font-sm">Database Normalization</h4>
+                                <ul>
+                                    <li><strong>1NF:</strong> Atomic values (no repeating groups).</li>
+                                    <li><strong>2NF:</strong> In 1NF + No partial dependencies (every non-prime
+                                        attribute belongs fully to candidate keys).</li>
+                                    <li><strong>3NF:</strong> In 2NF + No transitive dependencies ($A \rightarrow B, B
+                                        \rightarrow C$, so $A \rightarrow C$ is transitive).</li>
+                                    <li><strong>BCNF:</strong> In 3NF + For every functional dependency $X \rightarrow
+                                        Y$, $X$ must be a super key.</li>
+                                </ul>
+                            </div>
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">SQL & Transactions</h4>
+                                <p><strong>Transaction Isolation Levels:</strong> Read Uncommitted (Dirty Read), Read
+                                    Committed (Non-repeatable Read), Repeatable Read (Phantom Read), Serializable.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-card">
+                        <div class="tab-sub-header">
+                            <h3><i class="fa-solid fa-microchip text-accent"></i> Operating Systems Revision Panel</h3>
+                        </div>
+                        <div class="notes-body">
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">Process Management & Scheduling</h4>
+                                <ul>
+                                    <li><strong>Preemptive Scheduling:</strong> Round Robin (Time Quanta context switch
+                                        overhead), Shortest Remaining Time First (SRTF, optimal but suffers starvation),
+                                        Priority scheduling.</li>
+                                    <li><strong>Non-Preemptive:</strong> FCFS, Shortest Job First (SJF).</li>
+                                    <li><strong>Semaphores:</strong> Wait(S) { while $S \le 0$; $S$-- } | Signal(S) {
+                                        $S$++ }. Used for mutual exclusion & synchronization.</li>
+                                </ul>
+                            </div>
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">Memory Management</h4>
+                                <ul>
+                                    <li><strong>Paging:</strong> Logic address split into Page Number ($p$) and Offset
+                                        ($d$). Translates via Page Table.</li>
+                                    <li><strong>Virtual Memory:</strong> Demand paging. Page faults handled by OS disk
+                                        retrieval.</li>
+                                    <li><strong>Page Replacement Algorithms:</strong>
+                                        <ul>
+                                            <li>FIFO (Belady's Anomaly: anomaly where adding frames increases page
+                                                faults).</li>
+                                            <li>LRU (Least Recently Used) - needs hardware support.</li>
+                                            <li>Optimal algorithm - replaces page not needed for longest period.</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-card">
+                        <div class="tab-sub-header">
+                            <h3><i class="fa-solid fa-network-wired text-accent"></i> Computer Networks Brief</h3>
+                        </div>
+                        <div class="notes-body text-scroll">
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">OSI vs TCP/IP Layers</h4>
+                                <table class="mini-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Layer</th>
+                                            <th>OSI Name</th>
+                                            <th>Protocols / Devices</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>7</td>
+                                            <td>Application</td>
+                                            <td>HTTP, DNS, SMTP, FTP</td>
+                                        </tr>
+                                        <tr>
+                                            <td>6</td>
+                                            <td>Presentation</td>
+                                            <td>SSL, ASCII, Encryption</td>
+                                        </tr>
+                                        <tr>
+                                            <td>5</td>
+                                            <td>Session</td>
+                                            <td>RPC, NetBIOS, Sockets</td>
+                                        </tr>
+                                        <tr>
+                                            <td>4</td>
+                                            <td>Transport</td>
+                                            <td>TCP (reliable), UDP (unreliable)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>3</td>
+                                            <td>Network</td>
+                                            <td>IP, ICMP, Routers</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2</td>
+                                            <td>Data Link</td>
+                                            <td>Ethernet, Switches, MAC addresses</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>Physical</td>
+                                            <td>Cables, Hubs, Signal Bit Stream</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">IP Addressing</h4>
+                                <ul>
+                                    <li><strong>Class A:</strong> 0-127 (Subnet: 255.0.0.0)</li>
+                                    <li><strong>Class B:</strong> 128-191 (Subnet: 255.255.0.0)</li>
+                                    <li><strong>Class C:</strong> 192-223 (Subnet: 255.255.255.0)</li>
+                                    <li><strong>Class D:</strong> 224-239 (Multicast)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-card">
+                        <div class="tab-sub-header">
+                            <h3><i class="fa-solid fa-square-root-variable text-accent"></i> Speed Math & General
+                                Awareness Drill Notes</h3>
+                        </div>
+                        <div class="notes-body">
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">Calculation Fractions to Decimals</h4>
+                                <p class="math-fonts">
+                                    1/8 = 12.5% | 3/8 = 37.5% | 5/8 = 62.5% | 7/8 = 87.5% <br>
+                                    1/6 = 16.66% | 5/6 = 83.33% | 1/7 = 14.28% | 1/11 = 9.09% | 1/12 = 8.33%
+                                </p>
+                            </div>
+                            <div class="notes-section">
+                                <h4 class="notes-subtitle">Financial & General Awareness Bulletins (2026 Focus)</h4>
+                                <ul>
+                                    <li><strong>RBI Policy Rates:</strong> Check latest repo, reverse repo, MSF, and CRR
+                                        rates before entering mock answers.</li>
+                                    <li><strong>Budget 2026 Core Pillars:</strong> Focus on Digital Infrastructure,
+                                        Agriculture credit targets, Capital expenditure allocation, and Tax slab
+                                        adjustments.</li>
+                                    <li><strong>Current Affairs Rule of Thumb:</strong> Revise past 6 months of current
+                                        affairs specifically highlighting banking appointments, mergers, G20 outcomes,
+                                        Nobel winners, and sports events.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Drills Tab -->
+            <div class="tab-content hidden" id="checklist-tab">
+                <div class="card glass-card limit-width-medium">
+                    <div class="checklist-header text-center">
+                        <h2>Daily Speed & Focus Drills</h2>
+                        <p class="card-subtitle">These are mandatory daily elements, helping maintain speed levels
+                            required for AIR 10.</p>
+                        <div class="drill-progress" style="margin: 20px 0;">
+                            <div class="progress-header">
+                                <span>Daily Drills Completed</span>
+                                <span id="drills-ratio">0/5</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="drills-progress-bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="drill-list-elements" id="drill-list-content">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <div class="text-center" style="margin-top: 25px;">
+                        <button id="btn-reset-drills" class="btn btn-outline btn-sm">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> Reset Daily checklist
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
