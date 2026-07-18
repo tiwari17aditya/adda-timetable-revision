@@ -1,0 +1,14 @@
+{
+  "mocks": [],
+  "timetableStatus": {},
+  "dailyDrills": {
+    "lastCheckedDate": "",
+    "drills": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  }
+}
