@@ -278,13 +278,61 @@ function safeExecute(fn, context) {
     }
 }
 
+/* Supabase Cloud Database Integration */
+const SUPABASE_URL = "https://uxojkagegtyphbspyjxa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4b2prYWdlZ3R5cGhic3B5anhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDEzNzQsImV4cCI6MjEwMDgxNzM3NH0.OpT1VcbGTY7tvnOcO8wh43_E1X4SiPH1KBPfRKpheNA";
+
+const isSupabaseReady = Boolean(window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY);
+const supabaseClient = isSupabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
 /* Data Persistence */
 function saveState() {
     safeExecute(() => {
         localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
         localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
         logEvent("State saved to LocalStorage", "success");
+        saveStateToSupabase();
     }, "SaveState");
+}
+
+async function saveStateToSupabase() {
+    if (!supabaseClient) return;
+    try {
+        if (appState.mocks.length > 0) {
+            const rows = appState.mocks.map(m => ({
+                id: m.id,
+                category_id: m.categoryId,
+                paper_num: m.paperNum,
+                date: m.date,
+                source: m.source,
+                duration: m.duration,
+                total_qs: m.totalQs,
+                total_marks: m.totalMarks,
+                attempted: m.attempted,
+                correct: m.correct,
+                wrong: m.wrong,
+                score: m.score,
+                percentile: m.percentile,
+                cutoff: m.cutoff,
+                weaknesses: m.weaknesses,
+                accuracy: m.accuracy,
+                score_pct: m.scorePct,
+                unattempted: m.unattempted,
+                speed: m.speed
+            }));
+            const { error } = await supabaseClient.from('adda_mock_logs').upsert(rows);
+            if (error) logEvent("Supabase mock sync warning: " + error.message, "warn");
+            else logEvent("Synced " + rows.length + " mock records to Supabase Cloud DB", "success");
+        }
+
+        const ibpsRows = Object.entries(appState.ibpsChecked).map(([id, checked]) => ({ id, checked }));
+        if (ibpsRows.length > 0) {
+            const { error } = await supabaseClient.from('adda_ibps_checked').upsert(ibpsRows);
+            if (error) logEvent("Supabase IBPS sync warning: " + error.message, "warn");
+        }
+    } catch (err) {
+        logEvent("Supabase Cloud Sync error: " + err.message, "warn");
+    }
 }
 
 function loadState() {
@@ -295,7 +343,60 @@ function loadState() {
         if (storedMocks) appState.mocks = JSON.parse(storedMocks);
         if (storedIbps) appState.ibpsChecked = JSON.parse(storedIbps);
         logEvent("Loaded state from local storage", "info");
+
+        // Asynchronously load & merge from Supabase Cloud DB
+        loadStateFromSupabase();
     }, "LoadState");
+}
+
+async function loadStateFromSupabase() {
+    if (!supabaseClient) return;
+    try {
+        const { data: logsData, error: logsErr } = await supabaseClient.from('adda_mock_logs').select('*');
+        let updated = false;
+
+        if (!logsErr && logsData && logsData.length > 0) {
+            appState.mocks = logsData.map(item => ({
+                id: item.id,
+                categoryId: item.category_id,
+                paperNum: item.paper_num,
+                date: item.date,
+                source: item.source,
+                duration: item.duration,
+                totalQs: item.total_qs,
+                totalMarks: item.total_marks,
+                attempted: item.attempted,
+                correct: item.correct,
+                wrong: item.wrong,
+                score: item.score,
+                percentile: item.percentile,
+                cutoff: item.cutoff,
+                weaknesses: item.weaknesses,
+                accuracy: item.accuracy,
+                scorePct: item.score_pct,
+                unattempted: item.unattempted,
+                speed: item.speed
+            }));
+            updated = true;
+        }
+
+        const { data: ibpsData, error: ibpsErr } = await supabaseClient.from('adda_ibps_checked').select('*');
+        if (!ibpsErr && ibpsData && ibpsData.length > 0) {
+            const map = {};
+            ibpsData.forEach(item => { map[item.id] = item.checked; });
+            appState.ibpsChecked = map;
+            updated = true;
+        }
+
+        if (updated) {
+            localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
+            localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
+            logEvent("Synchronized live global data from Supabase Cloud Database", "success");
+            renderAllViews();
+        }
+    } catch (err) {
+        logEvent("Supabase cloud load fallback to LocalStorage: " + err.message, "info");
+    }
 }
 
 /* Main UI Initialization & Event Routing */
