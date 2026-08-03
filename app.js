@@ -278,12 +278,30 @@ function safeExecute(fn, context) {
     }
 }
 
-/* Supabase Cloud Database Integration */
-const SUPABASE_URL = "https://uxojkagegtyphbspyjxa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4b2prYWdlZ3R5cGhic3B5anhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDEzNzQsImV4cCI6MjEwMDgxNzM3NH0.OpT1VcbGTY7tvnOcO8wh43_E1X4SiPH1KBPfRKpheNA";
+/* Neon Serverless Postgres Cloud Sync */
+const NEON_CONN_STRING = "postgresql://neondb_owner:npg_b9yrSdxR4FlT@ep-crimson-forest-ayk2jth0.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require";
+const NEON_SQL_URL = "https://ep-crimson-forest-ayk2jth0.c-5.us-east-2.aws.neon.tech/sql";
 
-const isSupabaseReady = Boolean(window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY);
-const supabaseClient = isSupabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+async function executeNeonQuery(sqlQuery) {
+    try {
+        const response = await fetch(NEON_SQL_URL, {
+            method: 'POST',
+            headers: {
+                'Neon-Connection-String': NEON_CONN_STRING,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query: sqlQuery })
+        });
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText);
+        }
+        return await response.json();
+    } catch (err) {
+        logEvent("Neon Cloud DB query warning: " + err.message, "warn");
+        return null;
+    }
+}
 
 /* Data Persistence */
 function saveState() {
@@ -291,47 +309,60 @@ function saveState() {
         localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
         localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
         logEvent("State saved to LocalStorage", "success");
-        saveStateToSupabase();
+        saveStateToNeon();
     }, "SaveState");
 }
 
-async function saveStateToSupabase() {
-    if (!supabaseClient) return;
+async function saveStateToNeon() {
     try {
         if (appState.mocks.length > 0) {
-            const rows = appState.mocks.map(m => ({
-                id: m.id,
-                category_id: m.categoryId,
-                paper_num: m.paperNum,
-                date: m.date,
-                source: m.source,
-                duration: m.duration,
-                total_qs: m.totalQs,
-                total_marks: m.totalMarks,
-                attempted: m.attempted,
-                correct: m.correct,
-                wrong: m.wrong,
-                score: m.score,
-                percentile: m.percentile,
-                cutoff: m.cutoff,
-                weaknesses: m.weaknesses,
-                accuracy: m.accuracy,
-                score_pct: m.scorePct,
-                unattempted: m.unattempted,
-                speed: m.speed
-            }));
-            const { error } = await supabaseClient.from('adda_mock_logs').upsert(rows);
-            if (error) logEvent("Supabase mock sync warning: " + error.message, "warn");
-            else logEvent("Synced " + rows.length + " mock records to Supabase Cloud DB", "success");
+            for (const m of appState.mocks) {
+                const esc = (s) => (s !== undefined && s !== null ? `'${String(s).replace(/'/g, "''")}'` : "''");
+                const sql = `
+                    INSERT INTO adda_mock_logs (
+                        id, category_id, paper_num, date, source, duration, total_qs, total_marks,
+                        attempted, correct, wrong, score, percentile, cutoff, weaknesses, accuracy, score_pct, unattempted, speed
+                    ) VALUES (
+                        ${esc(m.id)}, ${esc(m.categoryId)}, ${m.paperNum || 0}, ${esc(m.date)}, ${esc(m.source)},
+                        ${m.duration || 0}, ${m.totalQs || 0}, ${m.totalMarks || 0}, ${m.attempted || 0}, ${m.correct || 0}, ${m.wrong || 0},
+                        ${m.score || 0}, ${m.percentile || 0}, ${m.cutoff || 0}, ${esc(m.weaknesses)}, ${m.accuracy || 0}, ${m.scorePct || 0},
+                        ${m.unattempted || 0}, ${m.speed || 0}
+                    )
+                    ON CONFLICT (id) DO UPDATE SET
+                        category_id = EXCLUDED.category_id,
+                        paper_num = EXCLUDED.paper_num,
+                        date = EXCLUDED.date,
+                        source = EXCLUDED.source,
+                        duration = EXCLUDED.duration,
+                        total_qs = EXCLUDED.total_qs,
+                        total_marks = EXCLUDED.total_marks,
+                        attempted = EXCLUDED.attempted,
+                        correct = EXCLUDED.correct,
+                        wrong = EXCLUDED.wrong,
+                        score = EXCLUDED.score,
+                        percentile = EXCLUDED.percentile,
+                        cutoff = EXCLUDED.cutoff,
+                        weaknesses = EXCLUDED.weaknesses,
+                        accuracy = EXCLUDED.accuracy,
+                        score_pct = EXCLUDED.score_pct,
+                        unattempted = EXCLUDED.unattempted,
+                        speed = EXCLUDED.speed;
+                `;
+                await executeNeonQuery(sql);
+            }
+            logEvent("Synced " + appState.mocks.length + " mock records to Neon Serverless Postgres DB", "success");
         }
 
-        const ibpsRows = Object.entries(appState.ibpsChecked).map(([id, checked]) => ({ id, checked }));
-        if (ibpsRows.length > 0) {
-            const { error } = await supabaseClient.from('adda_ibps_checked').upsert(ibpsRows);
-            if (error) logEvent("Supabase IBPS sync warning: " + error.message, "warn");
+        for (const [id, checked] of Object.entries(appState.ibpsChecked)) {
+            const sql = `
+                INSERT INTO adda_ibps_checked (id, checked)
+                VALUES ('${id.replace(/'/g, "''")}', ${checked ? 'TRUE' : 'FALSE'})
+                ON CONFLICT (id) DO UPDATE SET checked = EXCLUDED.checked;
+            `;
+            await executeNeonQuery(sql);
         }
     } catch (err) {
-        logEvent("Supabase Cloud Sync error: " + err.message, "warn");
+        logEvent("Neon Cloud Sync error: " + err.message, "warn");
     }
 }
 
@@ -344,46 +375,45 @@ function loadState() {
         if (storedIbps) appState.ibpsChecked = JSON.parse(storedIbps);
         logEvent("Loaded state from local storage", "info");
 
-        // Asynchronously load & merge from Supabase Cloud DB
-        loadStateFromSupabase();
+        // Asynchronously load & merge from Neon Cloud DB
+        loadStateFromNeon();
     }, "LoadState");
 }
 
-async function loadStateFromSupabase() {
-    if (!supabaseClient) return;
+async function loadStateFromNeon() {
     try {
-        const { data: logsData, error: logsErr } = await supabaseClient.from('adda_mock_logs').select('*');
+        const logsRes = await executeNeonQuery("SELECT * FROM adda_mock_logs ORDER BY created_at DESC;");
         let updated = false;
 
-        if (!logsErr && logsData && logsData.length > 0) {
-            appState.mocks = logsData.map(item => ({
+        if (logsRes && logsRes.rows && logsRes.rows.length > 0) {
+            appState.mocks = logsRes.rows.map(item => ({
                 id: item.id,
                 categoryId: item.category_id,
                 paperNum: item.paper_num,
                 date: item.date,
                 source: item.source,
-                duration: item.duration,
-                totalQs: item.total_qs,
-                totalMarks: item.total_marks,
-                attempted: item.attempted,
-                correct: item.correct,
-                wrong: item.wrong,
-                score: item.score,
-                percentile: item.percentile,
-                cutoff: item.cutoff,
-                weaknesses: item.weaknesses,
-                accuracy: item.accuracy,
-                scorePct: item.score_pct,
-                unattempted: item.unattempted,
-                speed: item.speed
+                duration: parseFloat(item.duration) || 0,
+                totalQs: parseFloat(item.total_qs) || 0,
+                totalMarks: parseFloat(item.total_marks) || 0,
+                attempted: parseFloat(item.attempted) || 0,
+                correct: parseFloat(item.correct) || 0,
+                wrong: parseFloat(item.wrong) || 0,
+                score: parseFloat(item.score) || 0,
+                percentile: parseFloat(item.percentile) || 0,
+                cutoff: parseFloat(item.cutoff) || 0,
+                weaknesses: item.weaknesses || "",
+                accuracy: parseFloat(item.accuracy) || 0,
+                scorePct: parseFloat(item.score_pct) || 0,
+                unattempted: parseFloat(item.unattempted) || 0,
+                speed: parseFloat(item.speed) || 0
             }));
             updated = true;
         }
 
-        const { data: ibpsData, error: ibpsErr } = await supabaseClient.from('adda_ibps_checked').select('*');
-        if (!ibpsErr && ibpsData && ibpsData.length > 0) {
+        const ibpsRes = await executeNeonQuery("SELECT * FROM adda_ibps_checked;");
+        if (ibpsRes && ibpsRes.rows && ibpsRes.rows.length > 0) {
             const map = {};
-            ibpsData.forEach(item => { map[item.id] = item.checked; });
+            ibpsRes.rows.forEach(item => { map[item.id] = Boolean(item.checked); });
             appState.ibpsChecked = map;
             updated = true;
         }
@@ -391,11 +421,11 @@ async function loadStateFromSupabase() {
         if (updated) {
             localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
             localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
-            logEvent("Synchronized live global data from Supabase Cloud Database", "success");
+            logEvent("Synchronized live global data from Neon Postgres Database", "success");
             renderAllViews();
         }
     } catch (err) {
-        logEvent("Supabase cloud load fallback to LocalStorage: " + err.message, "info");
+        logEvent("Neon cloud load fallback to LocalStorage: " + err.message, "info");
     }
 }
 
