@@ -1,43 +1,263 @@
-/* app.js: Banking Exam 2026 Revision & Mock Test Tracker */
+/* app.js: Banking Exam 2026 - 20 Mock Test Series Tracker (399 Papers) + IBPS PO Daily Tracker */
 
-// App State Management
+// 20 Mock Series Catalog Definition (399 Total Papers)
+const MOCK_SERIES_CATALOG = {
+    "prelims_full": {
+        name: "Prelims Full Mock Test",
+        totalPapers: 20,
+        defaultQs: 100,
+        defaultMarks: 100,
+        defaultTime: 60,
+        type: "prelims",
+        icon: "fa-clipboard-check",
+        desc: "Full length 100Q Prelims exams (Quant, Reasoning, English)"
+    },
+    "mbt_prelims": {
+        name: "MBT Prelims",
+        totalPapers: 37,
+        defaultQs: 100,
+        defaultMarks: 100,
+        defaultTime: 60,
+        type: "prelims",
+        icon: "fa-brain",
+        desc: "Memory Based Tests from actual past exam shifts"
+    },
+    "prelims_section": {
+        name: "Prelims Section Tests",
+        totalPapers: 30,
+        defaultQs: 35,
+        defaultMarks: 35,
+        defaultTime: 20,
+        type: "prelims",
+        icon: "fa-list-ol",
+        desc: "20-minute sectional speed drills"
+    },
+    "reasoning_chapter": {
+        name: "Reasoning Chapter Test",
+        totalPapers: 10,
+        defaultQs: 20,
+        defaultMarks: 20,
+        defaultTime: 15,
+        type: "topic",
+        icon: "fa-puzzle-piece",
+        desc: "Chapter-wise reasoning practice papers"
+    },
+    "quants_chapter": {
+        name: "Quants Chapter Test",
+        totalPapers: 20,
+        defaultQs: 20,
+        defaultMarks: 20,
+        defaultTime: 15,
+        type: "topic",
+        icon: "fa-calculator",
+        desc: "Chapter-wise quants practice papers"
+    },
+    "english_chapter": {
+        name: "English Chapter Test",
+        totalPapers: 5,
+        defaultQs: 20,
+        defaultMarks: 20,
+        defaultTime: 15,
+        type: "topic",
+        icon: "fa-font",
+        desc: "Grammar & vocabulary chapter tests"
+    },
+    "reasoning_topic": {
+        name: "Reasoning Topic Test",
+        totalPapers: 21,
+        defaultQs: 15,
+        defaultMarks: 15,
+        defaultTime: 10,
+        type: "topic",
+        icon: "fa-diagram-project",
+        desc: "Targeted topic-level reasoning tests"
+    },
+    "quants_topic": {
+        name: "Quants Topic Test",
+        totalPapers: 43,
+        defaultQs: 15,
+        defaultMarks: 15,
+        defaultTime: 10,
+        type: "topic",
+        icon: "fa-percent",
+        desc: "Topic drills for Speed Math, DI & Arithmetic"
+    },
+    "english_topic": {
+        name: "English Topic Tests",
+        totalPapers: 25,
+        defaultQs: 15,
+        defaultMarks: 15,
+        defaultTime: 10,
+        type: "topic",
+        icon: "fa-spell-check",
+        desc: "Reading comprehension, fillers & error spotting"
+    },
+    "full_length": {
+        name: "Full Length Mock Test",
+        totalPapers: 20,
+        defaultQs: 100,
+        defaultMarks: 100,
+        defaultTime: 60,
+        type: "prelims",
+        icon: "fa-file-signature",
+        desc: "Standard 100-mark full mock papers"
+    },
+    "section_2025": {
+        name: "2025 Section Test",
+        totalPapers: 30,
+        defaultQs: 35,
+        defaultMarks: 35,
+        defaultTime: 20,
+        type: "prelims",
+        icon: "fa-clock-rotate-left",
+        desc: "Archive sectional practice papers"
+    },
+    "subject_2025": {
+        name: "2025 Subject Test",
+        totalPapers: 30,
+        defaultQs: 50,
+        defaultMarks: 50,
+        defaultTime: 30,
+        type: "prelims",
+        icon: "fa-book-open",
+        desc: "Full subject tests from 2025 series"
+    },
+    "mains_full": {
+        name: "Full Length Mock Mains",
+        totalPapers: 10,
+        defaultQs: 155,
+        defaultMarks: 200,
+        defaultTime: 180,
+        type: "mains",
+        icon: "fa-trophy",
+        desc: "Full-length 3-hour Mains examination mocks"
+    },
+    "mains_section_2026": {
+        name: "Mains Section Test 2026",
+        totalPapers: 20,
+        defaultQs: 45,
+        defaultMarks: 60,
+        defaultTime: 45,
+        type: "mains",
+        icon: "fa-chart-column",
+        desc: "Advanced high-level Mains section papers"
+    },
+    "mains_subject_2026": {
+        name: "Mains Subject Test 2026",
+        totalPapers: 20,
+        defaultQs: 50,
+        defaultMarks: 50,
+        defaultTime: 45,
+        type: "mains",
+        icon: "fa-graduation-cap",
+        desc: "Comprehensive Mains subject tests"
+    },
+    "mbt_mains": {
+        name: "MBT Mains",
+        totalPapers: 8,
+        defaultQs: 155,
+        defaultMarks: 200,
+        defaultTime: 180,
+        type: "mains",
+        icon: "fa-award",
+        desc: "Memory based Mains exam shift papers"
+    },
+    "static_banking": {
+        name: "Static Banking Topic Test",
+        totalPapers: 22,
+        defaultQs: 20,
+        defaultMarks: 20,
+        defaultTime: 12,
+        type: "ca-banking",
+        icon: "fa-building-columns",
+        desc: "RBI, Financial Systems & Banking awareness"
+    },
+    "weekly_ca": {
+        name: "Weekly Current Affairs",
+        totalPapers: 48,
+        defaultQs: 50,
+        defaultMarks: 50,
+        defaultTime: 25,
+        type: "ca-banking",
+        icon: "fa-newspaper",
+        desc: "Weekly current affairs & financial bulletins"
+    },
+    "descriptive_test": {
+        name: "Descriptive Test",
+        totalPapers: 5,
+        defaultQs: 2,
+        defaultMarks: 25,
+        defaultTime: 30,
+        type: "special",
+        icon: "fa-pen-nib",
+        desc: "Essay & Letter writing evaluation tests"
+    },
+    "personality_test": {
+        name: "Personality Test",
+        totalPapers: 5,
+        defaultQs: 1,
+        defaultMarks: 100,
+        defaultTime: 30,
+        type: "special",
+        icon: "fa-user-tie",
+        desc: "Interview & GD prep evaluations"
+    }
+};
+
+// Calculate Total Available Papers across all 20 categories
+const TOTAL_AVAILABLE_PAPERS = Object.values(MOCK_SERIES_CATALOG).reduce((sum, item) => sum + item.totalPapers, 0); // 399
+
+// IBPS PO Prelims Daily Schedule (Aug 2 to Aug 22) - Extracted from Gemini PDF
+const IBPS_PO_SCHEDULE = [
+    // Phase 1: Core Conditioning (Aug 2 - Aug 8)
+    { phase: 1, phaseTitle: "Phase 1: Core Conditioning (Aug 2 - Aug 8)", date: "Aug 2", morning: "Prelims Full Mock", afternoon: "Section Test 1 (Weakest) & Section Test 2 (2nd Weakest)", evening: "Analyze Full Mock Errors, Analyze Section Tests, Log errors in notebook" },
+    { phase: 1, phaseTitle: "Phase 1: Core Conditioning (Aug 2 - Aug 8)", date: "Aug 3", morning: "Prelims Full Mock", afternoon: "Section Test 1 (Weakest) & Section Test 2 (2nd Weakest)", evening: "Analyze Full Mock Errors, Analyze Section Tests, Log errors in notebook" },
+    { phase: 1, phaseTitle: "Phase 1: Core Conditioning (Aug 2 - Aug 8)", date: "Aug 4", morning: "Prelims Full Mock", afternoon: "Section Test 1 (Weakest) & Section Test 2 (2nd Weakest)", evening: "Analyze Full Mock Errors, Analyze Section Tests, Log errors in notebook" },
+    { phase: 1, phaseTitle: "Phase 1: Core Conditioning (Aug 2 - Aug 8)", date: "Aug 5", morning: "Prelims Full Mock", afternoon: "Section Test 1 (Weakest) & Section Test 2 (2nd Weakest)", evening: "Analyze Full Mock Errors, Analyze Section Tests, Log errors in notebook" },
+    { phase: 1, phaseTitle: "Phase 1: Core Conditioning (Aug 2 - Aug 8)", date: "Aug 6", morning: "Prelims Full Mock", afternoon: "Section Test 1 (Weakest) & Section Test 2 (2nd Weakest)", evening: "Analyze Full Mock Errors, Analyze Section Tests, Log errors in notebook" },
+    { phase: 1, phaseTitle: "Phase 1: Core Conditioning (Aug 2 - Aug 8)", date: "Aug 7", morning: "Prelims Full Mock", afternoon: "Section Test 1 (Weakest) & Section Test 2 (2nd Weakest)", evening: "Analyze Full Mock Errors, Analyze Section Tests, Log errors in notebook" },
+    { phase: 1, phaseTitle: "Phase 1: Core Conditioning (Aug 2 - Aug 8)", date: "Aug 8", morning: "Prelims Full Mock", afternoon: "Section Test 1 (Weakest) & Section Test 2 (2nd Weakest)", evening: "Analyze Full Mock Errors, Analyze Section Tests, Log errors in notebook" },
+
+    // Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)
+    { phase: 2, phaseTitle: "Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)", date: "Aug 9", morning: "MBT Prelims (Prev Year)", afternoon: "Prelims Full Mock", evening: "Analyze MBT Paper, Analyze Full Mock, 1x Topic/Chapter Test (Weak area)" },
+    { phase: 2, phaseTitle: "Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)", date: "Aug 10", morning: "MBT Prelims (Prev Year)", afternoon: "Prelims Full Mock", evening: "Analyze MBT Paper, Analyze Full Mock, 1x Topic/Chapter Test (Weak area)" },
+    { phase: 2, phaseTitle: "Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)", date: "Aug 11", morning: "MBT Prelims (Prev Year)", afternoon: "Prelims Full Mock", evening: "Analyze MBT Paper, Analyze Full Mock, 1x Topic/Chapter Test (Weak area)" },
+    { phase: 2, phaseTitle: "Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)", date: "Aug 12", morning: "MBT Prelims (Prev Year)", afternoon: "Prelims Full Mock", evening: "Analyze MBT Paper, Analyze Full Mock, 1x Topic/Chapter Test (Weak area)" },
+    { phase: 2, phaseTitle: "Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)", date: "Aug 13", morning: "MBT Prelims (Prev Year)", afternoon: "Prelims Full Mock", evening: "Analyze MBT Paper, Analyze Full Mock, 1x Topic/Chapter Test (Weak area)" },
+    { phase: 2, phaseTitle: "Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)", date: "Aug 14", morning: "MBT Prelims (Prev Year)", afternoon: "Prelims Full Mock", evening: "Analyze MBT Paper, Analyze Full Mock, 1x Topic/Chapter Test (Weak area)" },
+    { phase: 2, phaseTitle: "Phase 2: Real-Exam Adaptation (Aug 9 - Aug 15)", date: "Aug 15", morning: "MBT Prelims (Prev Year)", afternoon: "Prelims Full Mock", evening: "Analyze MBT Paper, Analyze Full Mock, 1x Topic/Chapter Test (Weak area)" },
+
+    // Phase 3: Peak Performance (Aug 16 - Aug 21)
+    { phase: 3, phaseTitle: "Phase 3: Peak Performance (Aug 16 - Aug 21)", date: "Aug 16", morning: "MBT Prelims", afternoon: "Prelims Full Mock", evening: "Strict Strategy Review (MBT & Mock), Review Formula/Mistake Book" },
+    { phase: 3, phaseTitle: "Phase 3: Peak Performance (Aug 16 - Aug 21)", date: "Aug 17", morning: "MBT Prelims", afternoon: "Prelims Full Mock", evening: "Strict Strategy Review (MBT & Mock), Review Formula/Mistake Book" },
+    { phase: 3, phaseTitle: "Phase 3: Peak Performance (Aug 16 - Aug 21)", date: "Aug 18", morning: "MBT Prelims", afternoon: "Prelims Full Mock", evening: "Strict Strategy Review (MBT & Mock), Review Formula/Mistake Book" },
+    { phase: 3, phaseTitle: "Phase 3: Peak Performance (Aug 16 - Aug 21)", date: "Aug 19", morning: "MBT Prelims", afternoon: "Prelims Full Mock", evening: "Strict Strategy Review (MBT & Mock), Review Formula/Mistake Book" },
+    { phase: 3, phaseTitle: "Phase 3: Peak Performance (Aug 16 - Aug 21)", date: "Aug 20", morning: "MBT Prelims", afternoon: "Prelims Full Mock", evening: "Strict Strategy Review (MBT & Mock), Review Formula/Mistake Book" },
+    { phase: 3, phaseTitle: "Phase 3: Peak Performance (Aug 16 - Aug 21)", date: "Aug 21", morning: "MBT Prelims", afternoon: "Prelims Full Mock", evening: "Strict Strategy Review (MBT & Mock), Review Formula/Mistake Book" },
+
+    // Phase 4: Pre-Exam Cool Down (Aug 22)
+    { phase: 4, phaseTitle: "Phase 4: Pre-Exam Cool Down (Aug 22)", date: "Aug 22", morning: "Revise Squares, Cubes, Tables, Revise English Grammar Rules", afternoon: "No Mocks! Review Mistakes Only", evening: "Pack bag, print Admit Card & ID, Sleep early (7-8 hours)" }
+];
+
+// Application State
 const appState = {
     mocks: [],
-    timetableStatus: {}, // dayIndex -> boolean (true if completed)
-    dailyDrills: {
-        lastCheckedDate: '',
-        drills: [false, false, false, false, false] // 5 drills
-    },
+    ibpsChecked: {}, // "Aug 2_morning" -> boolean
     systemLogs: []
 };
 
-// Default Daily Drills Definition
-const DRILLS_STEPS = [
-    { title: "Speed Math Exercises", meta: "15 minutes calculation drills (squares, cubes, fractions, simplification)" },
-    { title: "English Wordlist & Editorial Read", meta: "15 mins reading editorial & noting 5 new vocab words" },
-    { title: "General Awareness Daily Quiz", meta: "15 minutes review of daily financial & current affairs quizzes" },
-    { title: "Specialist IT Officer Review", meta: "15 minutes quick card revision (DBMS, OS, Networking definitions)" },
-    { title: "Log Mock Test Results", meta: "Log and critique 2 mock exams to target AIR 10 standard" }
-];
-
-// Error & Log System Console Logger
+// Logging System Console
 function logEvent(message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString();
-    const logObj = { timestamp, message, type };
-    appState.systemLogs.unshift(logObj);
-
-    // Limit log memory to 100 entries
+    appState.systemLogs.unshift({ timestamp, message, type });
     if (appState.systemLogs.length > 100) appState.systemLogs.pop();
 
-    // Display in UI console
     const consoleEl = document.getElementById('sys-log-console');
     if (consoleEl) {
         const logRow = document.createElement('div');
         logRow.className = `log-row ${type}`;
         logRow.innerHTML = `<span class="log-time">[${timestamp}]</span><span class="log-msg">${escapeHtml(message)}</span>`;
         consoleEl.insertBefore(logRow, consoleEl.firstChild);
-
-        // Keep scroll top
         consoleEl.scrollTop = 0;
     }
     console.log(`[${type.toUpperCase()}] ${message}`);
@@ -45,1411 +265,826 @@ function logEvent(message, type = 'info') {
 
 function escapeHtml(text) {
     if (typeof text !== 'string') return '';
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// Wrap operations in Safe Try/Catch Handler
-function safeExecute(fn, errorContext) {
+function safeExecute(fn, context) {
     try {
         return fn();
     } catch (e) {
-        logEvent(`ERR [${errorContext}]: ${e.message}`, 'error');
+        logEvent(`ERR [${context}]: ${e.message}`, 'error');
         console.error(e);
         return null;
     }
 }
 
-/* LocalStorage Systems & File Handles */
-let fileHandle = null;
-
+/* Data Persistence */
 function saveState() {
     safeExecute(() => {
-        localStorage.setItem('air10_timetable_status', JSON.stringify(appState.timetableStatus));
-        localStorage.setItem('air10_mocks', JSON.stringify(appState.mocks));
-        localStorage.setItem('air10_drills', JSON.stringify(appState.dailyDrills));
-        logEvent("State serialized and saved to browser database", "success");
-
-        // Auto-sync if file linked
-        if (fileHandle) {
-            writeStateToLinkedFile();
-        }
-    }, "SaveStateToLocalStorage");
+        localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
+        localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
+        logEvent("State saved to LocalStorage", "success");
+    }, "SaveState");
 }
 
 function loadState() {
     safeExecute(() => {
-        const storedTimetable = localStorage.getItem('air10_timetable_status');
-        const storedMocks = localStorage.getItem('air10_mocks');
-        const storedDrills = localStorage.getItem('air10_drills');
+        const storedMocks = localStorage.getItem('air10_mocks_v2') || localStorage.getItem('air10_mocks');
+        const storedIbps = localStorage.getItem('air10_ibps_checked');
 
-        if (storedTimetable) appState.timetableStatus = JSON.parse(storedTimetable);
         if (storedMocks) appState.mocks = JSON.parse(storedMocks);
-        if (storedDrills) appState.dailyDrills = JSON.parse(storedDrills);
-
-        const today = new Date().toDateString();
-        if (appState.dailyDrills.lastCheckedDate !== today) {
-            appState.dailyDrills.lastCheckedDate = today;
-            appState.dailyDrills.drills = [false, false, false, false, false];
-            localStorage.setItem('air10_drills', JSON.stringify(appState.dailyDrills));
-            logEvent("Drills reset for the new day: " + today, "info");
-        }
-
-        logEvent("State retrieved successfully from local storage", "info");
-    }, "LoadStateFromLocalStorage");
+        if (storedIbps) appState.ibpsChecked = JSON.parse(storedIbps);
+        logEvent("Loaded state from local storage", "info");
+    }, "LoadState");
 }
 
-/* Dynamic Schedule Timetable Maker (28 Days) */
-const START_DATE = new Date(2026, 6, 18); // July 18, 2026 (index 6 = July)
+/* Main UI Initialization & Event Routing */
+document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    initTabNavigation();
+    initCategoryFormOptions();
+    initFormListeners();
+    initMatrixFilters();
+    initAnalyticsTableControls();
 
-const TOPICS_MATRIX = [
-    // Week 1
-    { quant: "Speed Math (Fraction to Decimals, Squares)", logic: "Syllogism (Only/Few concepts)", english: "Editorial Revision & Hard Words", it: "OS (Process state, Thread scheduling patterns)" },
-    { quant: "Quadratic Equations (Sign shortcuts)", logic: "Inequality (Coded & Direct)", english: "Closet Test Practice", it: "OS (Semaphores, Wait/Signal systems)" },
-    { quant: "Simplification & Approximation speed test", logic: "Direction Sense & Blood Relations", english: "Fillers (Single & Double)", it: "DBMS (Architecture, ACID transactions)" },
-    { quant: "Number Series (Wrong & Missing pattern)", logic: "Circular Puzzles (Inside/Outside)", english: "Parajumbles sentence starters", it: "DBMS (Entity-Relationship, Keys)" },
-    { quant: "Prelims Mixed Quant Drill (Speed emphasis)", logic: "Linear Seating Arrangement puzzles", english: "Spotting Errors (Subject-Verb agreement)", it: "DBMS (1NF, 2NF, 3NF Normalization rules)" },
-    { quant: "Data Interpretation (Bar & Line chart basics)", logic: "Double Row Arrangement puzzles", english: "Sentence Rearrangement tactics", it: "DBMS (BCNF & 4NF corner rules)" },
-    { Sunday: true }, // Rest Day
+    renderAllViews();
+});
 
-    // Week 2
-    { quant: "Data Interpretation (Pie chart & Table)", logic: "Coded Inequality & Input-Output basics", english: "Reading Comprehension speed drills", it: "DBMS (SQL DDL vs DML commands, joins)" },
-    { quant: "DI (Caselet DI Venn-diagram solving)", logic: "Machine Input-Output (Shift & Arr)", english: "Match the column & sentence connector", it: "DBMS (Index structures, B-Trees vs B+ Trees)" },
-    { quant: "Arithmetic Case study (Percentage & Ratio)", logic: "Syllogism (Reverse Syllogism)", english: "Cloze test (Mains pattern)", it: "CN (OSI Layers, Protocol stacks & ports)" },
-    { quant: "Arithmetic (Profit & Loss, Discount)", logic: "Coding-Decoding (New pattern, symbols)", english: "Paragraph Completion tests", it: "CN (TCP/IP Layers, Three-way handshake)" },
-    { quant: "Arithmetic (Simple & Compound Interest)", logic: "Scheduling & Month-based Puzzles", english: "Error correction (Preposition usages)", it: "CN (Subnetting, Classless CIDR IP calculation)" },
-    { quant: "Data Interpretation (Arithmetic-based DI)", logic: "Category & Box Puzzles (Multi-variable)", english: "Reading Comprehension (Economy base)", it: "CN (Routing Protocols: RIP, OSPF, BGP)" },
-    { Sunday: true }, // Rest Day
-
-    // Week 3
-    { quant: "Arithmetic (Time, Speed and Distance)", logic: "Data Sufficiency (2 statements)", english: "Phrase replacement vocabulary keys", it: "DS (Array representations & LinkedList variants)" },
-    { quant: "Arithmetic (Trains, Boats and Streams)", logic: "Coded Blood Relation & Directions", english: "Word Swap & Usage checks", it: "DS (Stack, Queues, Circular queues)" },
-    { quant: "Arithmetic (Time and Work, Pipes)", logic: "Mains Puzzle (Linear stack with coloring)", english: "Reading Comprehension (Inference questions)", it: "DS (Binary Search Trees, Traversal codes)" },
-    { quant: "Arithmetic (Partnership & Average)", logic: "Mains Input-Output (Number movements)", english: "Sentence Improvement grammar checks", it: "DSA (Bubble, Insertion, Quick, Merge Sorts)" },
-    { quant: "Probability & Permutations essentials", logic: "Logical Reasoning (Statement-Assumption)", english: "Mains level error detection series", it: "SE (SDLC Models: Waterfall vs Spiral vs Agile)" },
-    { quant: "Mixed Arithmetic Drills (Mains level)", logic: "Critical Reasoning (Strength of Argument)", english: "Descriptive Writing practice prep", it: "SE (Whitebox vs Blackbox testing levels)" },
-    { Sunday: true }, // Rest Day
-
-    // Week 4
-    { quant: "Data Interpretation (High level Mains DI)", logic: "Mains Puzzle (Floor & Flat with age)", english: "Vocabulary recap (200 words revisions)", it: "OOPs (Inheritance, Polymorphism dynamic)" },
-    { quant: "DI (Probability & Mixture based DI)", logic: "Mains Data Sufficiency (3 statements)", english: "RC (Science & Tech based topics)", it: "OOPs (Abstraction vs Encapsulation, interface)" },
-    { quant: "Speed Math Retest (Equations, Sequences)", logic: "Linear Seating (Direction unknown puzzles)", english: "General English Mock Tests review", it: "Web Tech (HTML, XML markup, JS scope rules)" },
-    { quant: "Mains Quant section test & analysis", logic: "Mains Logical Reasoning (Course of Action)", english: "English vocabulary revision cards", it: "Cyber Security (Asymmetric/Symmetric keys)" },
-    { quant: "Prelims Speed Math Drill (Formula review)", logic: "Seating arrangement (Blood relations mixed)", english: "Mains revision paper walkthroughs", it: "Cloud Concepts & DBMS Transactions recovery" },
-    { quant: "Full Quant Formula Sheet Revision", logic: "Full Logical Puzzle Revision sheet", english: "Grammar rules quick notes glance", it: "Final Professional Knowledge revision checklist" },
-    { Sunday: true } // Rest Day
-];
-
-function generateDateString(dayIndex) {
-    const d = new Date(START_DATE);
-    d.setDate(START_DATE.getDate() + dayIndex);
-    return d.toLocaleDateString("en-IN", { day: 'numeric', month: 'short' });
+function renderAllViews() {
+    renderHeaderStats();
+    renderDashboard();
+    render399Matrix();
+    renderIBPSPOTracker();
+    renderAnalyticsTable();
+    renderMistakeVault();
 }
 
-function initializeTimetable(filterType = "all") {
-    const timetableContainer = document.getElementById("timetable-grid-content");
-    if (!timetableContainer) return;
-
-    timetableContainer.innerHTML = "";
-
-    let totalCompleted = 0;
-
-    TOPICS_MATRIX.forEach((dayData, index) => {
-        const isCompleted = !!appState.timetableStatus[index];
-        if (isCompleted) totalCompleted++;
-
-        // Filter checks
-        if (filterType === "pending" && isCompleted) return;
-        if (filterType === "completed" && !isCompleted) return;
-
-        const dateStr = generateDateString(index);
-
-        const card = document.createElement("div");
-        card.className = `timetable-day-card ${isCompleted ? 'completed' : ''}`;
-        card.dataset.dayIndex = index;
-
-        const isSunday = dayData.Sunday;
-
-        let detailsHtml = "";
-        if (isSunday) {
-            detailsHtml = `
-                <div class="subject-block span-4" style="grid-column: span 4;">
-                    <span class="subject-name" style="color: var(--warning);"><i class="fa-solid fa-mug-hot"></i> SUNDAY PLAN</span>
-                    <span class="subject-task" style="font-weight: 500; font-size: 0.95rem;">
-                        <strong>Rest, Review & Weak Point Analysis:</strong> Take a breather. Revise current affairs of the past week, analyze mock test booklets you filed during the week, log weak areas, and plan for the next cycle. Light preparation only.
-                    </span>
-                </div>
-            `;
-        } else {
-            detailsHtml = `
-                <div class="subject-block">
-                    <span class="subject-name">PO Quantitative</span>
-                    <span class="subject-task">${dayData.quant}</span>
-                </div>
-                <div class="subject-block">
-                    <span class="subject-name">PO Reasoning</span>
-                    <span class="subject-task">${dayData.logic}</span>
-                </div>
-                <div class="subject-block">
-                    <span class="subject-name">English Grammar</span>
-                    <span class="subject-task">${dayData.english}</span>
-                </div>
-                <div class="subject-block">
-                    <span class="subject-name">SO IT Officer</span>
-                    <span class="subject-task">${dayData.it}</span>
-                </div>
-            `;
-        }
-
-        card.innerHTML = `
-            <div class="day-badge">
-                <span class="day-number">D-${index + 1}</span>
-                <span class="day-date">${dateStr}</span>
-            </div>
-            <div class="day-details">
-                ${detailsHtml}
-            </div>
-            <div class="day-action-checkbox">
-                <input type="checkbox" class="day-checkbox" ${isCompleted ? 'checked' : ''} data-index="${index}">
-            </div>
-        `;
-
-        timetableContainer.appendChild(card);
-    });
-
-    // Update overall Timetable Completion progress
-    const totalDays = TOPICS_MATRIX.length;
-    const progressPercent = Math.min(100, Math.round((totalCompleted / totalDays) * 100));
-
-    const progressText = document.getElementById("timetable-completion-percentage");
-    const progressBar = document.getElementById("timetable-completion-bar");
-
-    if (progressText) progressText.innerText = `${progressPercent}%`;
-    if (progressBar) progressBar.style.width = `${progressPercent}%`;
-
-    // Bind change checks
-    document.querySelectorAll(".day-checkbox").forEach(chk => {
-        chk.addEventListener("change", (e) => {
-            const idx = parseInt(e.target.dataset.index);
-            const checked = e.target.checked;
-
-            appState.timetableStatus[idx] = checked;
-
-            // Toggle completed class on card parent
-            const cardEl = e.target.closest(".timetable-day-card");
-            if (cardEl) {
-                if (checked) {
-                    cardEl.classList.add("completed");
-                } else {
-                    cardEl.classList.remove("completed");
-                }
-            }
-
-            saveState();
-
-            // Recompute overall progress recursively
-            let newCompleted = 0;
-            TOPICS_MATRIX.forEach((_, tempIdx) => {
-                if (appState.timetableStatus[tempIdx]) newCompleted++;
-            });
-            const newPercent = Math.min(100, Math.round((newCompleted / totalDays) * 100));
-            if (progressText) progressText.innerText = `${newPercent}%`;
-            if (progressBar) progressBar.style.width = `${newPercent}%`;
-
-            logEvent(`Timetable Day D-${idx + 1} marked as ${checked ? 'COMPLETED' : 'PENDING'}`, "info");
-        });
-    });
-}
-
-/* Dashboard & Analytics Recalculators */
-function updateDashboardMetrics() {
-    const mocks = appState.mocks;
-    const totalMocksCount = mocks.length;
-
-    // Set counts
-    const countBadge = document.getElementById("mocks-logged-count");
-    if (countBadge) countBadge.innerText = totalMocksCount;
-
-    const dashAvgPercentile = document.getElementById("dashboard-avg-percentile");
-    const dashAvgAccuracy = document.getElementById("dashboard-avg-accuracy");
-    const headerAvgPercentile = document.getElementById("average-percentile-badge");
-    const percentileStatus = document.getElementById("dashboard-percentile-status");
-    const accuracyStatus = document.getElementById("dashboard-accuracy-status");
-
-    // Quick summary items
-    const summaryAvgTime = document.getElementById("analytics-avg-time");
-    const summaryBestPrelim = document.getElementById("analytics-best-prelims");
-    const summaryBestSO = document.getElementById("analytics-best-so");
-    const summaryPercentileStd = document.getElementById("analytics-percentile-standard");
-
-    if (totalMocksCount === 0) {
-        if (dashAvgPercentile) dashAvgPercentile.innerText = "N/A";
-        if (dashAvgAccuracy) dashAvgAccuracy.innerText = "N/A";
-        if (headerAvgPercentile) headerAvgPercentile.innerText = "-- %";
-        if (percentileStatus) {
-            percentileStatus.innerHTML = `No exams logged`;
-            percentileStatus.className = "metric-indicator";
-        }
-        if (accuracyStatus) {
-            accuracyStatus.innerHTML = `-`;
-            accuracyStatus.className = "metric-indicator";
-        }
-
-        if (summaryAvgTime) summaryAvgTime.innerText = "N/A";
-        if (summaryBestPrelim) summaryBestPrelim.innerText = "N/A";
-        if (summaryBestSO) summaryBestSO.innerText = "N/A";
-        if (summaryPercentileStd) summaryPercentileStd.innerText = "Log mock tests";
-
-        renderNoChartData();
-        renderNoRecentMocks();
-        return;
-    }
-
-    let sumPercentile = 0;
-    let sumAccuracy = 0;
-    let sumDuration = 0;
-    let maxPrelims = 0;
-    let maxSO = 0;
-
-    mocks.forEach(m => {
-        sumPercentile += parseFloat(m.percentile);
-        sumAccuracy += parseFloat(m.accuracy);
-        sumDuration += parseFloat(m.duration);
-
-        if (m.type === "Prelims" || m.type === "Mains") {
-            if (m.score > maxPrelims) maxPrelims = m.score;
-        } else if (m.type === "IT-Officer") {
-            if (m.score > maxSO) maxSO = m.score;
-        }
-    });
-
-    const avgPercentile = (sumPercentile / totalMocksCount).toFixed(2);
-    const avgAccuracy = (sumAccuracy / totalMocksCount).toFixed(2);
-    const avgDuration = (sumDuration / totalMocksCount).toFixed(0);
-
-    // Update labels
-    if (dashAvgPercentile) dashAvgPercentile.innerText = `${avgPercentile}%`;
-    if (dashAvgAccuracy) dashAvgAccuracy.innerText = `${avgAccuracy}%`;
-    if (headerAvgPercentile) headerAvgPercentile.innerText = `${avgPercentile}%`;
-
-    if (summaryAvgTime) summaryAvgTime.innerText = `${avgDuration} mins`;
-    if (summaryBestPrelim) summaryBestPrelim.innerText = maxPrelims > 0 ? `${maxPrelims} marks` : "N/A";
-    if (summaryBestSO) summaryBestSO.innerText = maxSO > 0 ? `${maxSO} marks` : "N/A";
-
-    // AIR 10 standard check: Percentile >= 99.50% & Accuracy >= 90%
-    const isPercentileAir10 = avgPercentile >= 99.50;
-    const isAccuracyAir10 = avgAccuracy >= 90.00;
-
-    if (percentileStatus) {
-        if (isPercentileAir10) {
-            percentileStatus.innerHTML = `<i class="fa-solid fa-check-circle"></i> On Track for AIR 10`;
-            percentileStatus.className = "metric-indicator text-success";
-        } else if (avgPercentile >= 95.0) {
-            percentileStatus.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Borderline (Target: 99.5%+)`;
-            percentileStatus.className = "metric-indicator text-warning";
-        } else {
-            percentileStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Boost Percentile!`;
-            percentileStatus.className = "metric-indicator text-danger";
-        }
-    }
-
-    if (accuracyStatus) {
-        if (isAccuracyAir10) {
-            accuracyStatus.innerHTML = `<i class="fa-solid fa-check-circle"></i> Good Accuracy`;
-            accuracyStatus.className = "metric-indicator text-success";
-        } else {
-            accuracyStatus.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Focus on Negative Marks!`;
-            accuracyStatus.className = "metric-indicator text-warning";
-        }
-    }
-
-    // Overall Track Indicator
-    const ratingRing = document.getElementById("circle-overall-rating");
-    const statusText = document.getElementById("overall-status-text");
-    if (ratingRing && statusText) {
-        ratingRing.className = "metric-circle";
-        if (isPercentileAir10 && isAccuracyAir10) {
-            ratingRing.classList.add("ring-success");
-            statusText.innerText = "AIR 10 Zone";
-            statusText.style.color = "var(--success)";
-            if (summaryPercentileStd) summaryPercentileStd.innerText = "Excellent. Maintain speed!";
-        } else if (avgPercentile >= 97.0) {
-            ratingRing.classList.add("ring-warning");
-            statusText.innerText = "Competitive";
-            statusText.style.color = "var(--warning)";
-            if (summaryPercentileStd) summaryPercentileStd.innerText = "Analyze errors daily to gain 2%.";
-        } else {
-            ratingRing.classList.add("ring-danger");
-            statusText.innerText = "Requires Effort";
-            statusText.style.color = "var(--danger)";
-            if (summaryPercentileStd) summaryPercentileStd.innerText = "Accuracy too low. Slow down Qs.";
-        }
-    }
-
-    renderChart(mocks);
-    renderRecentMocksPanel(mocks);
-    updateWeaknessTags(mocks);
-}
-
-function updateWeaknessTags(mocks) {
-    const container = document.getElementById("aggregated-weakness-tags");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    // Scrape weakness keywords
-    const keywords = [];
-    mocks.forEach(m => {
-        if (!m.weaknesses) return;
-        // split by comma or periods
-        const parts = m.weaknesses.split(/[,.]/);
-        parts.forEach(p => {
-            const clean = p.trim().substring(0, 30);
-            if (clean && clean.length > 3 && !keywords.includes(clean)) {
-                keywords.push(clean);
-            }
+/* Tab Navigation Router */
+function initTabNavigation() {
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tabId = item.getAttribute('data-tab');
+            switchTab(tabId);
         });
     });
 
-    if (keywords.length === 0) {
-        container.innerHTML = `<p class="placeholder-text-small">No weaknesses logged yet</p>`;
-        return;
-    }
-
-    // Render up to 6 unique weakness tags
-    keywords.slice(0, 6).forEach(word => {
-        const tag = document.createElement("span");
-        tag.className = "weakness-tag";
-        tag.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(word)}`;
-        container.appendChild(tag);
-    });
-}
-
-function renderNoChartData() {
-    const container = document.getElementById("mock-chart-container");
-    if (!container) return;
-    container.innerHTML = `
-        <div class="no-data-render">
-            <i class="fa-solid fa-chart-line-down" style="font-size: 2.2rem; opacity: 0.3; margin-bottom: 8px;"></i>
-            <p>No data recorded yet.</p>
-        </div>
-    `;
-}
-
-function renderNoRecentMocks() {
-    const listContainer = document.getElementById("recent-mocks-list");
-    if (listContainer) {
-        listContainer.innerHTML = `<p class="placeholder-text text-center" style="font-size: 0.8rem; color: var(--text-muted);">No tests logged yet.</p>`;
+    const quickLogBtn = document.getElementById('btn-quick-nav-log');
+    if (quickLogBtn) {
+        quickLogBtn.addEventListener('click', () => switchTab('log-mock'));
     }
 }
 
-function renderChart(mocks) {
-    const container = document.getElementById("mock-chart-container");
-    if (!container) return;
+function switchTab(tabId) {
+    document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
 
-    container.innerHTML = "";
+    const selectedMenu = document.querySelector(`.menu-item[data-tab="${tabId}"]`);
+    const selectedTab = document.getElementById(`${tabId}-tab`);
 
-    const chartG = document.createElement("div");
-    chartG.className = "chart-visual-graph";
+    if (selectedMenu) selectedMenu.classList.add('active');
+    if (selectedTab) selectedTab.classList.remove('hidden');
 
-    // Get last 7 mocks in chronologic order
-    const displayed = mocks.slice(-7);
-
-    displayed.forEach((m, idx) => {
-        const col = document.createElement("div");
-        col.className = "chart-bar-col";
-
-        const pt = parseFloat(m.percentile);
-
-        const bar = document.createElement("div");
-        bar.className = "chart-bar-fill";
-        bar.style.height = `${pt * 0.95}%`; // limit to fit top padding
-
-        const tooltip = document.createElement("div");
-        tooltip.className = "chart-bar-tooltip";
-        tooltip.innerText = `${m.type} - P: ${m.percentile}% (S: ${m.score})`;
-
-        bar.appendChild(tooltip);
-
-        const label = document.createElement("div");
-        label.className = "chart-bar-label";
-        label.innerText = `M-${idx + 1}`;
-
-        col.appendChild(bar);
-        col.appendChild(label);
-        chartG.appendChild(col);
-    });
-
-    container.appendChild(chartG);
+    logEvent(`Navigated to view: ${tabId}`, 'info');
 }
 
-function renderRecentMocksPanel(mocks) {
-    const listContainer = document.getElementById("recent-mocks-list");
-    if (!listContainer) return;
+/* Header Quick Stats */
+function renderHeaderStats() {
+    const totalLogged = appState.mocks.length;
+    const countEl = document.getElementById('header-mocks-count');
+    const avgPctEl = document.getElementById('header-avg-percentile');
+    const avgAccEl = document.getElementById('header-avg-accuracy');
+    const completionEl = document.getElementById('header-completion-pct');
 
-    listContainer.innerHTML = "";
+    if (countEl) countEl.textContent = `${totalLogged} / ${TOTAL_AVAILABLE_PAPERS}`;
 
-    // Show last 3 mocks
-    const recent = mocks.slice(-3).reverse();
-    recent.forEach(m => {
-        const item = document.createElement("div");
-        item.className = "recent-mock-item";
+    if (totalLogged > 0) {
+        const avgPct = (appState.mocks.reduce((acc, m) => acc + (parseFloat(m.percentile) || 0), 0) / totalLogged).toFixed(2);
+        const avgAcc = (appState.mocks.reduce((acc, m) => acc + (parseFloat(m.accuracy) || 0), 0) / totalLogged).toFixed(2);
+        const completion = ((totalLogged / TOTAL_AVAILABLE_PAPERS) * 100).toFixed(1);
 
-        const ptVal = parseFloat(m.percentile);
-        let ptClass = "text-danger";
-        if (ptVal >= 99.5) ptClass = "text-success";
-        else if (ptVal >= 95.0) ptClass = "text-warning";
+        if (avgPctEl) avgPctEl.textContent = `${avgPct}%`;
+        if (avgAccEl) avgAccEl.textContent = `${avgAcc}%`;
+        if (completionEl) completionEl.textContent = `${completion}%`;
+    } else {
+        if (avgPctEl) avgPctEl.textContent = '0.0%';
+        if (avgAccEl) avgAccEl.textContent = '0.0%';
+        if (completionEl) completionEl.textContent = '0.0%';
+    }
+}
 
-        item.innerHTML = `
-            <div class="mock-item-meta">
-                <span class="mock-item-title">${escapeHtml(m.source)} (${escapeHtml(m.type)})</span>
-                <span class="mock-item-sub">Time: ${m.duration} mins | Score: ${m.score}/${m.total}</span>
-            </div>
-            <div class="mock-item-grade">
-                <span class="mock-item-percentile ${ptClass}">${ptVal}%</span>
-                <span class="badge ${ptVal >= 99.5 ? 'badge-success' : (ptVal >= 95 ? 'badge-warning' : 'badge-danger')}">${ptVal >= 99.5 ? 'AIR 10' : 'Warning'}</span>
+/* Dashboard Overview View */
+function renderDashboard() {
+    const totalLogged = appState.mocks.length;
+    const completionPct = ((totalLogged / TOTAL_AVAILABLE_PAPERS) * 100).toFixed(1);
+
+    const textEl = document.getElementById('dashboard-completion-text');
+    const barEl = document.getElementById('dashboard-completion-bar');
+
+    if (textEl) textEl.textContent = `${totalLogged} / ${TOTAL_AVAILABLE_PAPERS} Papers (${completionPct}%)`;
+    if (barEl) barEl.style.width = `${completionPct}%`;
+
+    const avgPctVal = document.getElementById('dashboard-avg-percentile');
+    const pctStatus = document.getElementById('dashboard-percentile-status');
+    const avgAccVal = document.getElementById('dashboard-avg-accuracy');
+    const accStatus = document.getElementById('dashboard-accuracy-status');
+
+    if (totalLogged > 0) {
+        const avgPct = (appState.mocks.reduce((acc, m) => acc + (parseFloat(m.percentile) || 0), 0) / totalLogged).toFixed(2);
+        const avgAcc = (appState.mocks.reduce((acc, m) => acc + (parseFloat(m.accuracy) || 0), 0) / totalLogged).toFixed(2);
+
+        if (avgPctVal) avgPctVal.textContent = `${avgPct}%`;
+        if (pctStatus) {
+            pctStatus.textContent = avgPct >= 99.5 ? "AIR 10 Qualified" : "Needs Improvement";
+            pctStatus.className = `metric-indicator ${avgPct >= 99.5 ? 'text-success' : 'text-warning'}`;
+        }
+
+        if (avgAccVal) avgAccVal.textContent = `${avgAcc}%`;
+        if (accStatus) {
+            accStatus.textContent = avgAcc >= 90.0 ? "High Accuracy" : "Focus on Precision";
+            accStatus.className = `metric-indicator ${avgAcc >= 90.0 ? 'text-success' : 'text-warning'}`;
+        }
+    }
+
+    renderCategorySummaryList();
+    renderRecentMocksList();
+    renderTrajectoryChart();
+}
+
+function renderCategorySummaryList() {
+    const container = document.getElementById('category-summary-list');
+    if (!container) return;
+
+    const groupCounts = {
+        prelims: { name: "Prelims Series (107 Papers)", total: 107, count: 0 },
+        mains: { name: "Mains Series (58 Papers)", total: 58, count: 0 },
+        topic: { name: "Topic & Chapter (124 Papers)", total: 124, count: 0 },
+        "ca-banking": { name: "Banking & CA (70 Papers)", total: 70, count: 0 },
+        special: { name: "Descriptive & Interview (10 Papers)", total: 10, count: 0 }
+    };
+
+    appState.mocks.forEach(m => {
+        const catObj = MOCK_SERIES_CATALOG[m.categoryId];
+        if (catObj && groupCounts[catObj.type]) {
+            groupCounts[catObj.type].count++;
+        }
+    });
+
+    let html = '';
+    Object.values(groupCounts).forEach(g => {
+        const pct = ((g.count / g.total) * 100).toFixed(0);
+        html += `
+            <div class="cat-stat-item">
+                <div class="cat-stat-header">
+                    <span>${g.name}</span>
+                    <span>${g.count}/${g.total} (${pct}%)</span>
+                </div>
+                <div class="cat-stat-bar-bg">
+                    <div class="cat-stat-bar-fill" style="width: ${pct}%"></div>
+                </div>
             </div>
         `;
-        listContainer.appendChild(item);
     });
+
+    container.innerHTML = html;
 }
 
-function populateHistoryTable() {
-    const tableBody = document.querySelector("#mock-history-table tbody");
-    if (!tableBody) return;
-
-    tableBody.innerHTML = "";
+function renderRecentMocksList() {
+    const listEl = document.getElementById('recent-mocks-list');
+    if (!listEl) return;
 
     if (appState.mocks.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="10" class="text-center" style="color: var(--text-muted); font-size: 0.82rem;">No mock tests logged yet. Enter your scores above.</td></tr>`;
+        listEl.innerHTML = '<p class="placeholder-text text-center">No tests logged yet.</p>';
         return;
     }
 
-    // Display in reverse chronological order
-    appState.mocks.slice().reverse().forEach((m, displayIdx) => {
-        // Find true index in appState.mocks
-        const originalIndex = appState.mocks.indexOf(m);
-        const row = document.createElement("tr");
+    const recent = appState.mocks.slice(0, 5);
+    let html = '<div class="recent-logs-flex" style="display:flex; flex-direction:column; gap:10px;">';
 
-        const cleanDate = new Date(m.date).toLocaleDateString("en-IN", { day: '2-digit', month: '2-digit' });
-
-        row.innerHTML = `
-            <td>${cleanDate}</td>
-            <td style="font-family: monospace; font-size: 0.72rem;">#${String(originalIndex + 1).padStart(3, '0')}</td>
-            <td><span class="badge ${m.type === 'Prelims' ? 'badge-primary' : (m.type === 'Mains' ? 'badge-accent' : 'badge-success')}">${m.type}</span></td>
-            <td>${escapeHtml(m.source)}</td>
-            <td><strong>${m.score}</strong> / ${m.total}</td>
-            <td class="${m.percentile >= 99.5 ? 'text-success' : (m.percentile >= 95 ? 'text-warning' : 'text-danger')}" style="font-weight:700;">${m.percentile}%</td>
-            <td>${m.accuracy}%</td>
-            <td>${m.duration} mins</td>
-            <td style="max-width: 250px; font-size: 0.75rem; color: var(--text-muted);" title="${escapeHtml(m.weaknesses)}">${escapeHtml(m.weaknesses.substring(0, 48))}${m.weaknesses.length > 48 ? '...' : ''}</td>
-            <td>
-                <button class="btn-delete-row" data-id="${originalIndex}">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            </td>
+    recent.forEach(m => {
+        const cat = MOCK_SERIES_CATALOG[m.categoryId] || { name: m.categoryId };
+        html += `
+            <div class="recent-log-row" style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color); display:flex; justify-between; align-items:center;">
+                <div>
+                    <strong style="font-size:0.88rem; color:#fff;">${cat.name} #${m.paperNum}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${m.date} | ${m.source}</div>
+                </div>
+                <div style="text-align:right;">
+                    <span class="badge badge-accent">${m.score}/${m.totalMarks} Marks</span>
+                    <div style="font-size:0.75rem; color:#34d399; margin-top:2px;">${m.percentile}%ile | ${m.accuracy}% Acc</div>
+                </div>
+            </div>
         `;
-        tableBody.appendChild(row);
     });
+    html += '</div>';
 
-    // Bind deletes
-    document.querySelectorAll(".btn-delete-row").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            const idx = parseInt(e.currentTarget.dataset.id);
-            if (confirm(`Do you wish to delete Mock result #${idx + 1}?`)) {
-                logEvent(`Deleting Mock result entry #${idx + 1} (${appState.mocks[idx].source})`, "warn");
-                appState.mocks.splice(idx, 1);
-                saveState();
-                populateHistoryTable();
-                updateDashboardMetrics();
-            }
-        });
-    });
+    listEl.innerHTML = html;
 }
 
-function handleMockFormSubmit(e) {
-    e.preventDefault();
+function renderTrajectoryChart() {
+    const container = document.getElementById('mock-chart-container');
+    if (!container) return;
 
-    const mockDate = document.getElementById("mock-date").value;
-    const mockType = document.getElementById("mock-type").value;
-    const mockSeries = document.getElementById("mock-series").value;
-    const mockDuration = parseInt(document.getElementById("mock-duration").value);
-    const mockScore = parseFloat(document.getElementById("mock-score").value);
-    const mockTotal = parseInt(document.getElementById("mock-total").value);
-    const mockPercentile = parseFloat(document.getElementById("mock-percentile").value);
-    const mockAccuracy = parseFloat(document.getElementById("mock-accuracy").value);
-    const mockWeaknesses = document.getElementById("mock-weaknesses").value;
-
-    // Validation
-    if (mockScore > mockTotal) {
-        logEvent(`Error checking: Score (${mockScore}) cannot exceed Total Marks (${mockTotal})`, "error");
-        alert("Input error: Score cannot exceed Total Marks.");
+    if (appState.mocks.length < 2) {
+        container.innerHTML = `
+            <div class="no-data-render">
+                <i class="fa-solid fa-chart-line-down" style="font-size: 2.5rem; opacity: 0.3; margin-bottom: 10px;"></i>
+                <p>Log at least 2 mock tests to view score & percentile trend trajectory.</p>
+            </div>
+        `;
         return;
     }
 
-    if (mockPercentile < 0 || mockPercentile > 100 || mockAccuracy < 0 || mockAccuracy > 100) {
-        logEvent(`Error checking: Percentile/Accuracy must be in range 0 - 100`, "error");
-        alert("Input error: Percentile and Accuracy must be between 0 and 100.");
-        return;
+    const sortedMocks = [...appState.mocks].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-10);
+
+    const width = 600;
+    const height = 180;
+    const padding = 30;
+
+    const maxScorePct = 100;
+    const pointsPct = sortedMocks.map((m, index) => {
+        const x = padding + (index * (width - 2 * padding) / (sortedMocks.length - 1));
+        const pctVal = parseFloat(m.percentile) || 0;
+        const y = height - padding - (pctVal / maxScorePct) * (height - 2 * padding);
+        return { x, y, val: pctVal, label: `${m.paperNum}` };
+    });
+
+    let pathD = `M ${pointsPct[0].x} ${pointsPct[0].y}`;
+    for (let i = 1; i < pointsPct.length; i++) {
+        pathD += ` L ${pointsPct[i].x} ${pointsPct[i].y}`;
     }
 
-    const newMock = {
-        date: mockDate || new Date().toISOString().split('T')[0],
-        type: mockType,
-        source: mockSeries,
-        duration: mockDuration,
-        score: mockScore,
-        total: mockTotal,
-        percentile: mockPercentile,
-        accuracy: mockAccuracy,
-        weaknesses: mockWeaknesses
-    };
+    let svgHtml = `
+        <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; overflow:visible;">
+            <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#d946ef" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#d946ef" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
 
-    appState.mocks.push(newMock);
-    saveState();
+            <line x1="${padding}" y1="${height - padding - (99.5 / maxScorePct) * (height - 2 * padding)}" 
+                  x2="${width - padding}" y2="${height - padding - (99.5 / maxScorePct) * (height - 2 * padding)}" 
+                  stroke="#10b981" stroke-dasharray="4" stroke-width="1.5"/>
+            <text x="${width - padding}" y="${height - padding - (99.5 / maxScorePct) * (height - 2 * padding) - 5}" 
+                  fill="#10b981" font-size="10" text-anchor="end">AIR 10 Target (99.5%)</text>
 
-    logEvent(`Mock Test logged successfully: ${mockSeries} (${mockType}) - Score: ${mockScore}/${mockTotal}, Percentile: ${mockPercentile}%`, "success");
+            <path d="${pathD}" fill="none" stroke="#d946ef" stroke-width="3" />
 
-    // Reset Form fields except date
-    document.getElementById("mock-type").selectedIndex = 0;
-    document.getElementById("mock-series").value = "";
-    document.getElementById("mock-duration").value = "";
-    document.getElementById("mock-score").value = "";
-    document.getElementById("mock-total").value = "";
-    document.getElementById("mock-percentile").value = "";
-    document.getElementById("mock-accuracy").value = "";
-    document.getElementById("mock-weaknesses").value = "";
+            ${pointsPct.map(p => `
+                <circle cx="${p.x}" cy="${p.y}" r="5" fill="#7c3aed" stroke="#fff" stroke-width="2"/>
+                <text x="${p.x}" y="${p.y - 10}" fill="#fff" font-size="10" text-anchor="middle">${p.val}%</text>
+            `).join('')}
+        </svg>
+    `;
 
-    populateHistoryTable();
-    updateDashboardMetrics();
+    container.innerHTML = svgHtml;
 }
 
-/* Timed 50-Q Quiz Engine */
-// To fit memory requirements, we programmatically output 50 questions from a dynamic generator function.
-const SECTIONS = ['Quantitative Aptitude', 'Reasoning Ability', 'English Language', 'General Awareness', 'Specialist IT Officer'];
-let activeQuizQuestions = [];
-let userAnswers = {}; // questionIndex -> selectedIndex
-let quizTimerId = null;
-let timeRemainingSeconds = 2400; // 40 minutes default
-let activeQuestionIndex = 0;
+/* TAB 2: 399-PAPER TEST MATRIX VIEW */
+function initMatrixFilters() {
+    const filterBtns = document.querySelectorAll('#matrix-category-filters button');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filter = btn.getAttribute('data-filter');
+            const searchVal = document.getElementById('matrix-search').value;
+            render399Matrix(filter, searchVal);
+        });
+    });
 
-// Programmtically generated 50 item mock questions bank
-function createQuizQuestionBank() {
-    const list = [];
+    const searchInput = document.getElementById('matrix-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const activeFilter = document.querySelector('#matrix-category-filters button.active').getAttribute('data-filter');
+            render399Matrix(activeFilter, e.target.value);
+        });
+    }
+}
 
-    // Let's populate 10 topics for each of the 5 sections
-    for (let secIdx = 0; secIdx < 5; secIdx++) {
-        const sectionName = SECTIONS[secIdx];
+function render399Matrix(filter = 'all', searchQuery = '') {
+    const grid = document.getElementById('matrix-series-grid');
+    if (!grid) return;
 
-        for (let qIdx = 0; qIdx < 10; qIdx++) {
-            const questionNumber = secIdx * 10 + qIdx + 1;
-            let query = "";
-            let options = [];
-            let correct = 0;
-            let explanation = "";
+    let html = '';
+    const q = searchQuery.toLowerCase().trim();
 
-            if (sectionName === 'Quantitative Aptitude') {
-                if (qIdx === 0) {
-                    query = "Find the next value in the given number pattern sequence: 8, 9, 20, 63, 256, ?";
-                    options = ["1285", "1280", "1290", "1295"];
-                    correct = 0;
-                    explanation = "The pattern is: $8 \\times 1 + 1 = 9$, $9 \\times 2 + 2 = 20$, $20 \\times 3 + 3 = 63$, $63 \\times 4 + 4 = 256$, and $256 \\times 5 + 5 = 1285$. Option A is correct.";
-                } else if (qIdx === 1) {
-                    query = "In a mixture of 80 liters, milk and water ratio is 5:3. How much water (in liters) must be added so the ratio becomes 5:4?";
-                    options = ["8 liters", "10 liters", "12 liters", "15 liters"];
-                    correct = 1;
-                    explanation = "Initial milk = $80 \\times 5/8 = 50$ liters, water = 30 liters. To make milk:water = 5:4, since milk remains 50, water must become 40. Water to add = $40 - 30 = 10$ liters.";
-                } else if (qIdx === 2) {
-                    query = "What is the approximate answer for: $\\sqrt{1444.02} \\times 2.03 + (15.01)^2 = ?$";
-                    options = ["298", "305", "301", "287"];
-                    correct = 2;
-                    explanation = "$\\sqrt{1444} \\approx 38$. $38 \\times 2 = 76$. $15^2 = 225$. $76 + 225 = 301$.";
-                } else {
-                    // Generate variable arithmetic questions
-                    const numA = 10 + qIdx * 5;
-                    const numB = 5 + qIdx * 3;
-                    query = `If ${numA} items are bought for Rs 120 and sold at Rs 150, find the average profit percentage per item.`;
-                    options = ["25.00%", "20.00%", "30.00%", "15.00%"];
-                    correct = 0;
-                    explanation = `Profit = 150 - 120 = 30. Profit percentage = (30 / 120) * 100 = 25%.`;
-                }
-            } else if (sectionName === 'Reasoning Ability') {
-                if (qIdx === 0) {
-                    query = "Statements: All stars are planets. Some planets are galaxies. Conclusions: I. Some stars are galaxies. II. No star is galaxy.";
-                    options = ["Only I follows", "Only II follows", "Either I or II follows", "Neither I nor II follows"];
-                    correct = 2;
-                    explanation = "Because stars and galaxies are not directly linked but are complementary pairs ('Some' and 'No'), 'Either I or II follows' is the correct logical deduction.";
-                } else if (qIdx === 1) {
-                    query = "If P @ Q means P is north of Q, P # Q means P is east of Q, P $ Q means P is south of Q. Given: A @ B # C $ D. What is direction of D with respect of B?";
-                    options = ["East", "West", "Southeast", "Cannot be determined"];
-                    correct = 3;
-                    explanation = "We do not know the exact distances between nodes; hence A @ B # C $ D can put D north, south, or inline east of B. Distance is required.";
-                } else {
-                    query = `Six persons (A, B, C, D, E, F) sit around a circle facing center. C sits 2nd to right of A. F sits immediate left of B. If questions target seating, who sits opposite to ${String.fromCharCode(65 + qIdx % 6)}?`;
-                    options = ["B", "D", "E", "Depends on exact placement"];
-                    correct = 3;
-                    explanation = "Circle configuration requires full constraints list. Dynamic puzzle.";
-                }
-            } else if (sectionName === 'English Language') {
-                if (qIdx === 0) {
-                    query = "Choose the synonym for 'OBDURATE':";
-                    options = ["Stubborn", "Flexible", "Clever", "Transient"];
-                    correct = 0;
-                    explanation = "'Obdurate' means stubbornly refusing to change one's opinion or course of action. Stubborn is correct.";
-                } else if (qIdx === 1) {
-                    query = "Identify correct spelling:";
-                    options = ["Conscientious", "Conscientes", "Conscientous", "Consientous"];
-                    correct = 0;
-                    explanation = "The correct spelling is 'Conscientious' (guided by one's sense of right and wrong).";
-                } else {
-                    query = "Improve the underlined segment: 'No sooner did he reached the hall than the bell rang.'";
-                    options = ["no sooner did he reach", "no sooner had he reach", "no sooner did he reached", "No improvement"];
-                    correct = 0;
-                    explanation = "'Did' takes bare infinitive form of verb ('reach'). So 'did he reach' is grammatically correct.";
-                }
-            } else if (sectionName === 'General Awareness') {
-                if (qIdx === 0) {
-                    query = "What does the abbreviation 'MSF' stand for in monetary policy terms of the RBI?";
-                    options = ["Marginal Standing Facility", "Markets Stabilization Fund", "Monetary System Finance", "Mutual Secondary Funding"];
-                    correct = 0;
-                    explanation = "MSF stands for Marginal Standing Facility, which allows commercial banks to borrow overnight funds from RBI against Govt securities at a rate higher than repo.";
-                } else if (qIdx === 1) {
-                    query = "Which entity regulates the credit rating agencies operating in India?";
-                    options = ["SEBI", "RBI", "IRDAI", "NABARD"];
-                    correct = 0;
-                    explanation = "The Securities and Exchange Board of India (SEBI) regulates credit rating agencies under SEBI Regulations 1999.";
-                } else {
-                    query = `Under the direct tax collection targets, what is the capital expenditure focus of the Union Budget for the fiscal year 2026?`;
-                    options = ["Infrastructure & digital network growth", "Agri-business subsidies only", "Interest obligations reduction", "None of these"];
-                    correct = 0;
-                    explanation = "Budget 2026 places prime capital allocation emphasis on Infrastructure, green fuel initiatives, and digital networks.";
-                }
-            } else if (sectionName === 'Specialist IT Officer') {
-                if (qIdx === 0) {
-                    query = "Which transaction isolation level prevents both Dirty Reads and Non-repeatable Reads, but allows Phantom Reads?";
-                    options = ["Read Committed", "Repeatable Read", "Read Uncommitted", "Serializable"];
-                    correct = 1;
-                    explanation = "Repeatable Read prevents Dirty and Non-repeatable Reads. Phantom Reads can only be completely fully locked out under Serializable isolation level.";
-                } else if (qIdx === 1) {
-                    query = "In DBMS normalization theory, a relation is in BCNF if for every non-trivial functional dependency X -> Y:";
-                    options = ["X is a super key", "Y is a prime attribute", "X and Y are prime attributes", "None of the above"];
-                    correct = 0;
-                    explanation = "By definition, a relation is in Boyce-Codd Normal Form (BCNF) if and only if for every non-trivial functional dependency X -> Y, X is a super key of the schema.";
-                } else if (qIdx === 2) {
-                    query = "Which CPU scheduling algorithm scheduling policy is optimal in terms of minimizing average waiting time but suffers from process starvation?";
-                    options = ["Shortest Job First (SJF)", "First Come First Served (FCFS)", "Round Robin", "Priority Scheduling"];
-                    correct = 0;
-                    explanation = "SJF (Shortest Job First) is optimal. Processes with long CPU bursts suffer starvation if short jobs arrive repeatedly.";
-                } else if (qIdx === 3) {
-                    query = "What is the network class category of the IP address 192.168.1.1?";
-                    options = ["Class A", "Class B", "Class C", "Class D"];
-                    correct = 2;
-                    explanation = "Class C range is 192.0.0.0 to 223.255.255.255. Thus, 192.168.1.1 belongs to Class C.";
-                } else if (qIdx === 4) {
-                    query = "Which protocol is responsible for mapping an IP address to a physical MAC address on a local area network?";
-                    options = ["ARP", "DHCP", "DNS", "ICMP"];
-                    correct = 0;
-                    explanation = "Address Resolution Protocol (ARP) translates logical IP addresses to MAC sub-layer hardware addresses.";
-                } else if (qIdx === 5) {
-                    query = "In object-oriented programming, which feature refers to the ability of different classes to respond of the same message call in unique ways?";
-                    options = ["Polymorphism", "Encapsulation", "Inheritance", "Abstraction"];
-                    correct = 0;
-                    explanation = "Polymorphism (many forms) allows subclass custom overriding of base class method interfaces.";
-                } else {
-                    query = `In Data Structures, what is the average time complexity complexity for searching an item in a balanced Binary Search Tree (BST)?`;
-                    options = ["O(log n)", "O(n)", "O(1)", "O(n log n)"];
-                    correct = 0;
-                    explanation = "Searching in a balanced BST splits search scope in half at each step, yielding average time complexity of O(log n).";
-                }
+    Object.entries(MOCK_SERIES_CATALOG).forEach(([catId, cat]) => {
+        if (filter !== 'all' && cat.type !== filter) return;
+        if (q && !cat.name.toLowerCase().includes(q) && !cat.desc.toLowerCase().includes(q)) return;
+
+        const loggedMocks = appState.mocks.filter(m => m.categoryId === catId);
+        const attemptedCount = loggedMocks.length;
+        const pct = ((attemptedCount / cat.totalPapers) * 100).toFixed(0);
+
+        let badgesHtml = '';
+        for (let i = 1; i <= cat.totalPapers; i++) {
+            const mockAttempt = loggedMocks.find(m => parseInt(m.paperNum) === i);
+            if (mockAttempt) {
+                badgesHtml += `
+                    <div class="paper-badge completed" onclick="editMockLog('${mockAttempt.id}')">
+                        #${i}
+                        <span class="badge-tooltip">
+                            Paper #${i}<br>
+                            Score: ${mockAttempt.score}/${mockAttempt.totalMarks}<br>
+                            Acc: ${mockAttempt.accuracy}% | ${mockAttempt.percentile}%ile
+                        </span>
+                    </div>
+                `;
+            } else {
+                badgesHtml += `
+                    <div class="paper-badge pending" onclick="openFormForPaper('${catId}', ${i})">
+                        #${i}
+                        <span class="badge-tooltip">Click to Log Paper #${i}</span>
+                    </div>
+                `;
             }
-
-            list.push({
-                index: questionNumber,
-                section: sectionName,
-                q: query || `Sample question placeholder for ${sectionName} #${qIdx + 1}`,
-                options: options.length > 0 ? options : ["A", "B", "C", "D"],
-                correctAnswer: correct,
-                explanation: explanation || `Detailed step explanation for ${sectionName} practice item #${qIdx + 1}.`
-            });
-        }
-    }
-
-    return list;
-}
-
-function startQuiz() {
-    activeQuizQuestions = createQuizQuestionBank();
-    userAnswers = {};
-    activeQuestionIndex = 0;
-    timeRemainingSeconds = 2400; // 40 mins
-
-    document.getElementById("quiz-intro-state").classList.add("hidden");
-    document.getElementById("quiz-active-state").classList.remove("hidden");
-    document.getElementById("quiz-result-state").classList.add("hidden");
-    document.getElementById("quiz-solutions-pane").classList.add("hidden");
-
-    initializeQuestionNavigator();
-    showQuestion(0);
-    startTimer();
-
-    logEvent("Daily 50-Q Timed Quiz started by user. 40 minutes remaining limit.", "info");
-}
-
-function startTimer() {
-    if (quizTimerId) clearInterval(quizTimerId);
-
-    const displayEl = document.getElementById("timer-countdown");
-
-    quizTimerId = setInterval(() => {
-        timeRemainingSeconds--;
-
-        let minutes = Math.floor(timeRemainingSeconds / 60);
-        let seconds = timeRemainingSeconds % 60;
-
-        if (displayEl) {
-            displayEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
-        if (timeRemainingSeconds <= 0) {
-            clearInterval(quizTimerId);
-            logEvent("Time limit exceeded. Submitting quiz answers automatically.", "warn");
-            submitQuiz(true);
-        }
-    }, 1000);
-}
-
-function stopTimer() {
-    if (quizTimerId) {
-        clearInterval(quizTimerId);
-        quizTimerId = null;
-    }
-}
-
-function initializeQuestionNavigator() {
-    const gridEl = document.getElementById("question-button-grid");
-    if (!gridEl) return;
-
-    gridEl.innerHTML = "";
-
-    for (let index = 0; index < 50; index++) {
-        const marker = document.createElement("div");
-        marker.className = "grid-marker";
-        marker.id = `marker-btn-${index}`;
-        marker.innerText = index + 1;
-        marker.addEventListener("click", () => {
-            showQuestion(index);
-        });
-        gridEl.appendChild(marker);
-    }
-}
-
-function showQuestion(index) {
-    if (index < 0 || index >= 50) return;
-
-    activeQuestionIndex = index;
-
-    // Set active status to maps
-    document.querySelectorAll(".grid-marker").forEach(m => m.classList.remove("active"));
-    const marker = document.getElementById(`marker-btn-${index}`);
-    if (marker) marker.classList.add("active");
-
-    // Load Question Info
-    const q = activeQuizQuestions[index];
-
-    document.getElementById("q-subject").innerText = q.section;
-    document.getElementById("q-text").innerText = `${q.index}. ${q.q}`;
-
-    // Load Options
-    const optContainer = document.getElementById("q-options-list");
-    optContainer.innerHTML = "";
-
-    const savedAnswer = userAnswers[index];
-
-    q.options.forEach((optText, optIdx) => {
-        const btn = document.createElement("button");
-        btn.className = `option-btn ${savedAnswer === optIdx ? 'selected' : ''}`;
-        btn.innerText = optText;
-
-        btn.addEventListener("click", () => {
-            selectOption(index, optIdx);
-        });
-
-        optContainer.appendChild(btn);
+        html += `
+            <div class="series-card">
+                <div class="series-card-header">
+                    <h3><i class="fa-solid ${cat.icon} text-accent"></i> ${cat.name}</h3>
+                    <span class="series-type-tag tag-${cat.type}">${cat.type}</span>
+                </div>
+                <div class="series-card-meta">
+                    <span><i class="fa-solid fa-file"></i> ${attemptedCount}/${cat.totalPapers} Attempted</span>
+                    <span><i class="fa-solid fa-list-check"></i> ${cat.defaultQs} Qs</span>
+                    <span><i class="fa-solid fa-clock"></i> ${cat.defaultTime} mins</span>
+                </div>
+                <div class="series-progress-bar-container">
+                    <div class="series-progress-bar" style="width: ${pct}%"></div>
+                </div>
+                <div class="paper-badge-grid">
+                    ${badgesHtml}
+                </div>
+            </div>
+        `;
     });
 
-    // Update Question Counter Layout
-    document.getElementById("quiz-question-counter").innerText = `Question ${index + 1} of 50`;
-
-    // Progress bar marker
-    const prog = document.getElementById("quiz-progress-marker");
-    if (prog) prog.style.width = `${((index + 1) / 50) * 100}%`;
+    grid.innerHTML = html || '<p class="placeholder-text text-center span-2">No matching mock test series found.</p>';
 }
 
-function selectOption(qIdx, optIdx) {
-    userAnswers[qIdx] = optIdx;
+function openFormForPaper(categoryId, paperNum) {
+    switchTab('log-mock');
+    const catSelect = document.getElementById('mock-category-select');
+    if (catSelect) {
+        catSelect.value = categoryId;
+        updatePaperNumOptions(categoryId);
+        const paperSelect = document.getElementById('mock-paper-num');
+        if (paperSelect) paperSelect.value = paperNum;
+        applyCategoryDefaults(categoryId);
+    }
+}
 
-    // Re-highlight option buttons in UI
-    const btns = document.querySelectorAll("#q-options-list .option-btn");
-    btns.forEach((btn, idx) => {
-        if (idx === optIdx) btn.classList.add("selected");
-        else btn.classList.remove("selected");
+/* TAB 3: IBPS PO PRELIMS DAILY TRACKER (Aug 2 - Aug 22 PDF Strategy) */
+function renderIBPSPOTracker() {
+    const container = document.getElementById('ibps-phases-grid');
+    if (!container) return;
+
+    let totalSessions = IBPS_PO_SCHEDULE.length * 3; // 21 days * 3 sessions = 63 sessions
+    let completedSessions = 0;
+
+    // Group by Phase
+    const phases = {};
+    IBPS_PO_SCHEDULE.forEach(item => {
+        if (!phases[item.phase]) {
+            phases[item.phase] = { title: item.phaseTitle, days: [] };
+        }
+        phases[item.phase].days.push(item);
     });
 
-    // Update navigator marker class
-    const marker = document.getElementById(`marker-btn-${qIdx}`);
-    if (marker) {
-        marker.classList.remove("skipped");
-        marker.classList.add("answered");
-    }
+    let html = '';
+    Object.entries(phases).forEach(([pNum, phase]) => {
+        let daysHtml = '';
+        phase.days.forEach(day => {
+            const mKey = `${day.date}_m`;
+            const aKey = `${day.date}_a`;
+            const eKey = `${day.date}_e`;
 
-    logEvent(`Selected Option ${String.fromCharCode(65 + optIdx)} for Question #${qIdx + 1}`, "info");
-}
+            const mDone = appState.ibpsChecked[mKey] || false;
+            const aDone = appState.ibpsChecked[aKey] || false;
+            const eDone = appState.ibpsChecked[eKey] || false;
 
-function navigateQuestion(direction) {
-    const nextIdx = activeQuestionIndex + direction;
-    if (nextIdx >= 0 && nextIdx < 50) {
-        showQuestion(nextIdx);
-    }
-}
+            if (mDone) completedSessions++;
+            if (aDone) completedSessions++;
+            if (eDone) completedSessions++;
 
-function skipQuestion() {
-    const marker = document.getElementById(`marker-btn-${activeQuestionIndex}`);
-    if (marker && !marker.classList.contains("answered")) {
-        marker.classList.add("skipped");
-    }
-    navigateQuestion(1);
-}
-
-function submitQuiz(auto = false) {
-    stopTimer();
-
-    // Compile scorecard
-    let correctCount = 0;
-    let incorrectCount = 0;
-    let unansweredCount = 0;
-
-    const sectionalScores = {
-        'Quantitative Aptitude': 0,
-        'Reasoning Ability': 0,
-        'English Language': 0,
-        'General Awareness': 0,
-        'Specialist IT Officer': 0
-    };
-
-    activeQuizQuestions.forEach((q, idx) => {
-        const uAns = userAnswers[idx];
-        if (uAns === undefined) {
-            unansweredCount++;
-        } else if (uAns === q.correctAnswer) {
-            correctCount++;
-            sectionalScores[q.section]++;
-        } else {
-            incorrectCount++;
-        }
-    });
-
-    // Negative marks of -0.25 standard limit
-    const totalScore = parseFloat((correctCount - (incorrectCount * 0.25)).toFixed(2));
-    const timeSpentMins = Math.ceil((2400 - timeRemainingSeconds) / 60);
-
-    // Save to daily state
-    let streakCount = parseInt(localStorage.getItem('air10_quiz_streak') || '0');
-    streakCount++;
-    localStorage.setItem('air10_quiz_streak', String(streakCount));
-
-    const streakEl = document.getElementById("quiz-streak");
-    if (streakEl) streakEl.innerText = `${streakCount} days`;
-
-    // Draw scorecard screen
-    document.getElementById("quiz-active-state").classList.add("hidden");
-    document.getElementById("quiz-result-state").classList.remove("hidden");
-
-    // Adjust scoring texts
-    const titleEl = document.getElementById("result-status-title");
-    const summaryEl = document.getElementById("result-scoring-summary");
-    const badgeIcon = document.getElementById("quiz-achievement-badge");
-
-    if (titleEl) {
-        titleEl.innerText = auto ? "Time Expired! Quiz Submitted" : "Quiz Completed!";
-    }
-
-    if (summaryEl) {
-        summaryEl.innerHTML = `You scored <strong>${totalScore}</strong> out of 50. Correct: ${correctCount} | Incorrect: ${incorrectCount} | Skipped: ${unansweredCount}. Time taken: ${timeSpentMins} minutes.`;
-    }
-
-    // Achievement indicator
-    if (badgeIcon) {
-        if (totalScore >= 42.0) {
-            badgeIcon.style.background = "linear-gradient(135deg, #10b981, #3b82f6)";
-            badgeIcon.innerHTML = `<i class="fa-solid fa-crown"></i>`;
-            logEvent("AIR 10 Zone Achieved in Daily Practice Test!", "success");
-        } else if (totalScore >= 35.0) {
-            badgeIcon.style.background = "linear-gradient(135deg, #f59e0b, #d946ef)";
-            badgeIcon.innerHTML = `<i class="fa-solid fa-medal"></i>`;
-        } else {
-            badgeIcon.style.background = "linear-gradient(135deg, #ef4444, #7c3aed)";
-            badgeIcon.innerHTML = `<i class="fa-solid fa-brain"></i>`;
-        }
-    }
-
-    // Sectional markup
-    const sectionContainer = document.getElementById("sectional-score-container");
-    if (sectionContainer) {
-        sectionContainer.innerHTML = "";
-        SECTIONS.forEach(secTitle => {
-            const secScore = sectionalScores[secTitle];
-            const div = document.createElement("div");
-            div.className = "sectional-card";
-            div.innerHTML = `
-                <span class="sect-label">${secTitle.substring(0, 15)}</span>
-                <span class="sect-val">${secScore}/10</span>
+            daysHtml += `
+                <div class="ibps-day-card card glass-card" style="margin-bottom: 15px; padding: 16px;">
+                    <div style="display:flex; justify-between; align-items:center; margin-bottom:10px;">
+                        <strong style="color:var(--accent); font-size:1rem;">${day.date} Strategy Routine</strong>
+                        <span class="badge badge-primary">Phase ${pNum}</span>
+                    </div>
+                    <div class="ibps-session-row" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                        <label class="session-chk-box ${mDone ? 'completed' : ''}" style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid var(--border-color); cursor:pointer;">
+                            <input type="checkbox" onchange="toggleIBPSSession('${mKey}')" ${mDone ? 'checked' : ''}>
+                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-top:4px;">MORNING</div>
+                            <div style="font-size:0.82rem; color:#fff; font-weight:500;">${day.morning}</div>
+                        </label>
+                        <label class="session-chk-box ${aDone ? 'completed' : ''}" style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid var(--border-color); cursor:pointer;">
+                            <input type="checkbox" onchange="toggleIBPSSession('${aKey}')" ${aDone ? 'checked' : ''}>
+                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-top:4px;">AFTERNOON</div>
+                            <div style="font-size:0.82rem; color:#fff; font-weight:500;">${day.afternoon}</div>
+                        </label>
+                        <label class="session-chk-box ${eDone ? 'completed' : ''}" style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid var(--border-color); cursor:pointer;">
+                            <input type="checkbox" onchange="toggleIBPSSession('${eKey}')" ${eDone ? 'checked' : ''}>
+                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-top:4px;">EVENING & ANALYSIS</div>
+                            <div style="font-size:0.82rem; color:#fff; font-weight:500;">${day.evening}</div>
+                        </label>
+                    </div>
+                </div>
             `;
-            sectionContainer.appendChild(div);
+        });
+
+        html += `
+            <div class="phase-section" style="margin-bottom:30px;">
+                <h3 style="color:#fff; margin-bottom:15px; border-bottom: 2px solid var(--primary); padding-bottom: 8px;">
+                    <i class="fa-solid fa-flag-checkered text-accent"></i> ${phase.title}
+                </h3>
+                ${daysHtml}
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+
+    // Update overall header progress bar
+    const pct = ((completedSessions / totalSessions) * 100).toFixed(0);
+    const txtEl = document.getElementById('ibps-completion-text');
+    const barEl = document.getElementById('ibps-completion-bar');
+    if (txtEl) txtEl.textContent = `${completedSessions} / ${totalSessions} Sessions Done (${pct}%)`;
+    if (barEl) barEl.style.width = `${pct}%`;
+}
+
+function toggleIBPSSession(key) {
+    appState.ibpsChecked[key] = !appState.ibpsChecked[key];
+    saveState();
+    renderIBPSPOTracker();
+}
+
+/* TAB 4: LOG MOCK RESULT FORM */
+function initCategoryFormOptions() {
+    const catSelect = document.getElementById('mock-category-select');
+    if (!catSelect) return;
+
+    let html = '<option value="" disabled selected>Select Test Category (1 of 20)</option>';
+    Object.entries(MOCK_SERIES_CATALOG).forEach(([catId, cat]) => {
+        html += `<option value="${catId}">${cat.name} (${cat.totalPapers} Papers)</option>`;
+    });
+    catSelect.innerHTML = html;
+
+    catSelect.addEventListener('change', (e) => {
+        const catId = e.target.value;
+        updatePaperNumOptions(catId);
+        applyCategoryDefaults(catId);
+    });
+
+    const dateInput = document.getElementById('mock-date');
+    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+}
+
+function updatePaperNumOptions(catId) {
+    const paperSelect = document.getElementById('mock-paper-num');
+    if (!paperSelect || !MOCK_SERIES_CATALOG[catId]) return;
+
+    const total = MOCK_SERIES_CATALOG[catId].totalPapers;
+    let html = '';
+    for (let i = 1; i <= total; i++) {
+        html += `<option value="${i}">Paper #${i}</option>`;
+    }
+    paperSelect.innerHTML = html;
+}
+
+function applyCategoryDefaults(catId) {
+    const cat = MOCK_SERIES_CATALOG[catId];
+    if (!cat) return;
+
+    const totalQsInput = document.getElementById('mock-total-qs');
+    const totalMarksInput = document.getElementById('mock-total-marks');
+    const durationInput = document.getElementById('mock-duration');
+
+    if (totalQsInput) totalQsInput.value = cat.defaultQs;
+    if (totalMarksInput) totalMarksInput.value = cat.defaultMarks;
+    if (durationInput) durationInput.value = cat.defaultTime;
+
+    updateRealtimeFormMetrics();
+}
+
+function initFormListeners() {
+    const form = document.getElementById('mock-log-form');
+    const inputs = ['mock-total-qs', 'mock-total-marks', 'mock-attempted', 'mock-correct', 'mock-wrong', 'mock-score', 'mock-duration'];
+
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateRealtimeFormMetrics);
+    });
+
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveMockLogFromForm();
         });
     }
 
-    // Load Solutions List
-    populateSolutionsPanel();
-
-    logEvent(`Quiz performance evaluation: Score = ${totalScore}/50. Correct = ${correctCount}. Persistence complete.`, "success");
+    const cancelBtn = document.getElementById('btn-cancel-edit');
+    if (cancelBtn) cancelBtn.addEventListener('click', resetForm);
 }
 
-function populateSolutionsPanel() {
-    const listEl = document.getElementById("solutions-list-content");
-    const containerEl = document.getElementById("quiz-solutions-pane");
-    if (!listEl || !containerEl) return;
+function updateRealtimeFormMetrics() {
+    const totalQs = parseFloat(document.getElementById('mock-total-qs')?.value) || 0;
+    const totalMarks = parseFloat(document.getElementById('mock-total-marks')?.value) || 0;
+    const attempted = parseFloat(document.getElementById('mock-attempted')?.value) || 0;
+    const correct = parseFloat(document.getElementById('mock-correct')?.value) || 0;
+    const score = parseFloat(document.getElementById('mock-score')?.value) || 0;
+    const duration = parseFloat(document.getElementById('mock-duration')?.value) || 0;
 
-    listEl.innerHTML = "";
-    containerEl.classList.remove("hidden");
+    const accuracy = attempted > 0 ? ((correct / attempted) * 100).toFixed(1) : 0;
+    const scorePct = totalMarks > 0 ? ((score / totalMarks) * 100).toFixed(1) : 0;
+    const unattempted = totalQs > 0 && totalQs >= attempted ? totalQs - attempted : 0;
+    const speed = attempted > 0 && duration > 0 ? Math.round((duration * 60) / attempted) : 0;
 
-    activeQuizQuestions.forEach((q, idx) => {
-        const item = document.createElement("div");
-        item.className = "sol-item";
+    const accEl = document.getElementById('prev-accuracy');
+    const scorePctEl = document.getElementById('prev-score-pct');
+    const unattEl = document.getElementById('prev-unattempted');
+    const speedEl = document.getElementById('prev-speed');
 
-        const uAns = userAnswers[idx];
-        const isCorrect = uAns === q.correctAnswer;
+    if (accEl) accEl.textContent = `${accuracy}%`;
+    if (scorePctEl) scorePctEl.textContent = `${scorePct}%`;
+    if (unattEl) unattEl.textContent = `${unattempted}`;
+    if (speedEl) speedEl.textContent = `${speed} sec/q`;
+}
 
-        let verdictClass = "sol-verdict-incorrect";
-        let verdictText = `Incorrect (Your choice: Option ${String.fromCharCode(65 + uAns)})`;
+function saveMockLogFromForm() {
+    safeExecute(() => {
+        const editId = document.getElementById('edit-mock-id').value;
+        const categoryId = document.getElementById('mock-category-select').value;
+        const paperNum = parseInt(document.getElementById('mock-paper-num').value);
+        const date = document.getElementById('mock-date').value;
+        const source = document.getElementById('mock-series').value.trim();
+        const duration = parseFloat(document.getElementById('mock-duration').value);
+        const totalQs = parseFloat(document.getElementById('mock-total-qs').value);
+        const totalMarks = parseFloat(document.getElementById('mock-total-marks').value);
+        const attempted = parseFloat(document.getElementById('mock-attempted').value);
+        const correct = parseFloat(document.getElementById('mock-correct').value);
+        const wrong = parseFloat(document.getElementById('mock-wrong').value);
+        const score = parseFloat(document.getElementById('mock-score').value);
+        const percentile = parseFloat(document.getElementById('mock-percentile').value);
+        const cutoff = parseFloat(document.getElementById('mock-cutoff').value) || 0;
+        const weaknesses = document.getElementById('mock-weaknesses').value.trim();
 
-        if (uAns === undefined) {
-            verdictClass = "sol-verdict-skipped";
-            verdictText = "Skipped / Unanswered";
-        } else if (isCorrect) {
-            verdictClass = "sol-verdict-correct";
-            verdictText = "Correct Answer";
+        const accuracy = attempted > 0 ? parseFloat(((correct / attempted) * 100).toFixed(2)) : 0;
+        const scorePct = totalMarks > 0 ? parseFloat(((score / totalMarks) * 100).toFixed(2)) : 0;
+        const unattempted = Math.max(0, totalQs - attempted);
+        const speed = attempted > 0 ? Math.round((duration * 60) / attempted) : 0;
+
+        const mockObj = {
+            id: editId || `mock_${Date.now()}`,
+            categoryId,
+            paperNum,
+            date,
+            source,
+            duration,
+            totalQs,
+            totalMarks,
+            attempted,
+            correct,
+            wrong,
+            score,
+            percentile,
+            cutoff,
+            weaknesses,
+            accuracy,
+            scorePct,
+            unattempted,
+            speed
+        };
+
+        if (editId) {
+            const index = appState.mocks.findIndex(m => m.id === editId);
+            if (index !== -1) appState.mocks[index] = mockObj;
+            logEvent(`Updated mock log #${paperNum} for ${categoryId}`, 'success');
+        } else {
+            appState.mocks.unshift(mockObj);
+            logEvent(`Logged new score: ${score}/${totalMarks} for ${MOCK_SERIES_CATALOG[categoryId]?.name || categoryId} #${paperNum}`, 'success');
         }
 
-        item.innerHTML = `
-            <div class="sol-header">
-                <span class="badge ${isCorrect ? 'badge-success' : 'badge-danger'}">Question ${q.index}</span>
-                <span class="text-accent">${q.section}</span>
-            </div>
-            <div class="sol-question">
-                <strong>Question:</strong> ${q.q}
-            </div>
-            <div class="sol-verdict-box ${verdictClass}">
-                <i class="fa-solid ${isCorrect ? 'fa-check' : (uAns === undefined ? 'fa-forward' : 'fa-xmark')}"></i> ${verdictText}
-            </div>
-            <div class="sol-explanation">
-                <strong>Correct: Option ${String.fromCharCode(65 + q.correctAnswer)} (${q.options[q.correctAnswer]})</strong><br>
-                <div style="margin-top: 8px; color: var(--text-muted);">${q.explanation}</div>
-            </div>
-        `;
-        listEl.appendChild(item);
-    });
-}
-
-/* Daily Checklist Functions */
-function initializeDailyChecklist() {
-    const listContainer = document.getElementById("drill-list-content");
-    if (!listContainer) return;
-
-    listContainer.innerHTML = "";
-
-    let checkedCount = 0;
-
-    DRILLS_STEPS.forEach((drill, index) => {
-        const isChecked = !!appState.dailyDrills.drills[index];
-        if (isChecked) checkedCount++;
-
-        const item = document.createElement("div");
-        item.className = `drill-item ${isChecked ? 'checked' : ''}`;
-
-        item.innerHTML = `
-            <div class="drill-item-text">
-                <div class="drill-title">${drill.title}</div>
-                <div class="drill-meta">${drill.meta}</div>
-            </div>
-            <input type="checkbox" class="drill-checkbox" ${isChecked ? 'checked' : ''} data-index="${index}">
-        `;
-        listContainer.appendChild(item);
-    });
-
-    updateDrillsProgressBar(checkedCount);
-
-    // Bind click checks
-    document.querySelectorAll(".drill-checkbox").forEach(chk => {
-        chk.addEventListener("change", (e) => {
-            const idx = parseInt(e.target.dataset.index);
-            const isChecked = e.target.checked;
-
-            appState.dailyDrills.drills[idx] = isChecked;
-            appState.dailyDrills.lastCheckedDate = new Date().toDateString();
-
-            saveState();
-
-            const parent = e.target.closest(".drill-item");
-            if (parent) {
-                if (isChecked) parent.classList.add("checked");
-                else parent.classList.remove("checked");
-            }
-
-            // Recompute checked counts
-            let countTotal = 0;
-            appState.dailyDrills.drills.forEach(d => { if (d) countTotal++; });
-            updateDrillsProgressBar(countTotal);
-
-            logEvent(`Daily Drill: "${DRILLS_STEPS[idx].title}" marked as ${isChecked ? 'COMPLETED' : 'PENDING'}`, "info");
-        });
-    });
-}
-
-function updateDrillsProgressBar(checkedCount) {
-    const totalDrills = DRILLS_STEPS.length;
-    const ratioEl = document.getElementById("drills-ratio");
-    const barEl = document.getElementById("drills-progress-bar");
-
-    if (ratioEl) ratioEl.innerText = `${checkedCount}/${totalDrills}`;
-
-    if (barEl) {
-        const percent = Math.round((checkedCount / totalDrills) * 100);
-        barEl.style.width = `${percent}%`;
-    }
-}
-
-function resetDailyChecklist() {
-    if (confirm("Reset current drills checklist back to zero progress?")) {
-        appState.dailyDrills.drills = [false, false, false, false, false];
-        appState.dailyDrills.lastCheckedDate = new Date().toDateString();
         saveState();
-        initializeDailyChecklist();
-        logEvent("Cleared and reset daily checklist progress to zero", "info");
-    }
+        resetForm();
+        renderAllViews();
+        switchTab('dashboard');
+    }, "SaveMockForm");
 }
 
-/* Nav Tab Routing System */
-function setActiveTab(targetTab) {
-    logEvent(`Navigating menu: switching active page view to "${targetTab}"`, "info");
+function editMockLog(mockId) {
+    const mock = appState.mocks.find(m => m.id === mockId);
+    if (!mock) return;
 
-    // Update Menu selection class
-    document.querySelectorAll(".menu-item").forEach(item => {
-        if (item.dataset.tab === targetTab) {
-            item.classList.add("active");
-        } else {
-            item.classList.remove("active");
-        }
+    switchTab('log-mock');
+
+    document.getElementById('edit-mock-id').value = mock.id;
+    document.getElementById('form-title').textContent = "Edit Mock Test Result";
+
+    const catSelect = document.getElementById('mock-category-select');
+    if (catSelect) {
+        catSelect.value = mock.categoryId;
+        updatePaperNumOptions(mock.categoryId);
+        document.getElementById('mock-paper-num').value = mock.paperNum;
+    }
+
+    document.getElementById('mock-date').value = mock.date;
+    document.getElementById('mock-series').value = mock.source;
+    document.getElementById('mock-duration').value = mock.duration;
+    document.getElementById('mock-total-qs').value = mock.totalQs;
+    document.getElementById('mock-total-marks').value = mock.totalMarks;
+    document.getElementById('mock-attempted').value = mock.attempted;
+    document.getElementById('mock-correct').value = mock.correct;
+    document.getElementById('mock-wrong').value = mock.wrong;
+    document.getElementById('mock-score').value = mock.score;
+    document.getElementById('mock-percentile').value = mock.percentile;
+    document.getElementById('mock-cutoff').value = mock.cutoff;
+    document.getElementById('mock-weaknesses').value = mock.weaknesses;
+
+    document.getElementById('btn-save-mock').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Update Mock Score';
+    document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+    updateRealtimeFormMetrics();
+}
+
+function resetForm() {
+    document.getElementById('mock-log-form')?.reset();
+    document.getElementById('edit-mock-id').value = '';
+    document.getElementById('form-title').textContent = "Log Mock Test Result";
+    document.getElementById('btn-save-mock').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Mock Score';
+    document.getElementById('btn-cancel-edit').classList.add('hidden');
+    document.getElementById('mock-date').value = new Date().toISOString().split('T')[0];
+    updateRealtimeFormMetrics();
+}
+
+/* TAB 5: ANALYTICS & HISTORY TABLE VIEW */
+function initAnalyticsTableControls() {
+    const searchInput = document.getElementById('history-search');
+    const filterCat = document.getElementById('history-filter-category');
+
+    if (searchInput) searchInput.addEventListener('input', () => renderAnalyticsTable());
+    if (filterCat) filterCat.addEventListener('change', () => renderAnalyticsTable());
+
+    const btnExport = document.getElementById('btn-export-data');
+    if (btnExport) btnExport.addEventListener('click', exportDataJSON);
+
+    const btnClear = document.getElementById('btn-clear-logs');
+    if (btnClear) btnClear.addEventListener('click', clearAllLogs);
+
+    const btnClearSys = document.getElementById('btn-clear-sys-logs');
+    if (btnClearSys) btnClearSys.addEventListener('click', () => {
+        appState.systemLogs = [];
+        const consoleEl = document.getElementById('sys-log-console');
+        if (consoleEl) consoleEl.innerHTML = '';
     });
 
-    // Toggle Content boxes
-    document.querySelectorAll(".tab-content").forEach(tab => {
-        if (tab.id === `${targetTab}-tab`) {
-            tab.classList.remove("hidden");
-        } else {
-            tab.classList.add("hidden");
+    const fileInput = document.getElementById('input-import-file');
+    if (fileInput) fileInput.addEventListener('change', importDataJSON);
+}
+
+function renderAnalyticsTable() {
+    const tableBody = document.querySelector('#mock-history-table tbody');
+    const catSelect = document.getElementById('history-filter-category');
+    if (!tableBody) return;
+
+    if (catSelect && catSelect.options.length <= 1) {
+        Object.entries(MOCK_SERIES_CATALOG).forEach(([catId, cat]) => {
+            const opt = document.createElement('option');
+            opt.value = catId;
+            opt.textContent = cat.name;
+            catSelect.appendChild(opt);
+        });
+    }
+
+    const searchQuery = document.getElementById('history-search')?.value.toLowerCase().trim() || '';
+    const selectedCat = document.getElementById('history-filter-category')?.value || 'all';
+
+    let filtered = appState.mocks.filter(m => {
+        if (selectedCat !== 'all' && m.categoryId !== selectedCat) return false;
+        if (searchQuery) {
+            const text = `${MOCK_SERIES_CATALOG[m.categoryId]?.name || ''} ${m.source} ${m.weaknesses} ${m.date}`.toLowerCase();
+            if (!text.includes(searchQuery)) return false;
         }
+        return true;
     });
 
-    // Context-specific loads
-    if (targetTab === "mock-tracker") {
-        populateHistoryTable();
+    if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="10" class="text-center placeholder-text" style="padding:20px;">No matching mock test logs recorded.</td></tr>`;
+        return;
     }
+
+    let html = '';
+    filtered.forEach(m => {
+        const cat = MOCK_SERIES_CATALOG[m.categoryId] || { name: m.categoryId };
+        html += `
+            <tr>
+                <td>${m.date}</td>
+                <td><strong style="color:#fff;">${cat.name}</strong></td>
+                <td><span class="badge badge-accent">Paper #${m.paperNum}</span></td>
+                <td>${escapeHtml(m.source)}</td>
+                <td><strong>${m.score}</strong> / ${m.totalMarks} <small style="color:var(--text-muted);">(${m.scorePct}%)</small></td>
+                <td><span class="${m.accuracy >= 90 ? 'text-success' : 'text-warning'}">${m.accuracy}%</span></td>
+                <td><strong class="${m.percentile >= 99.5 ? 'text-success' : 'text-accent'}">${m.percentile}%ile</strong></td>
+                <td>${m.duration} mins <small style="color:var(--text-muted);">(${m.speed}s/q)</small></td>
+                <td style="max-width:200px; font-size:0.8rem; color:var(--text-muted);">${escapeHtml(m.weaknesses)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline" onclick="editMockLog('${m.id}')" title="Edit Log"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteMockLog('${m.id}')" title="Delete Log"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tableBody.innerHTML = html;
 }
 
-/* Data backup utilities */
-/* Data backup & Sync utilities */
-async function linkLocalFile() {
-    try {
-        const options = {
-            suggestedName: 'timetable_data.json',
-            types: [{
-                description: 'JSON Files',
-                accept: {
-                    'application/json': ['.json'],
-                },
-            }],
-        };
-        fileHandle = await window.showSaveFilePicker(options);
-        logEvent("Linked local file: " + fileHandle.name, "success");
-        updateSyncStatus();
-
-        // Write current state immediately
-        await writeStateToLinkedFile();
-    } catch (err) {
-        if (err.name !== 'AbortError') {
-            logEvent("Failed to link file: " + err.message, "error");
-            alert("Error linking file: " + err.message);
-        }
-    }
+function deleteMockLog(mockId) {
+    if (!confirm("Are you sure you want to delete this mock log?")) return;
+    appState.mocks = appState.mocks.filter(m => m.id !== mockId);
+    saveState();
+    renderAllViews();
+    logEvent("Deleted mock log record", "warn");
 }
 
-async function writeStateToLinkedFile() {
-    if (!fileHandle) return;
-    try {
-        const options = { mode: 'readwrite' };
-        if (await fileHandle.queryPermission(options) !== 'granted') {
-            if (await fileHandle.requestPermission(options) !== 'granted') {
-                logEvent("Write permission denied by user", "warn");
-                return;
-            }
-        }
-        const writable = await fileHandle.createWritable();
-        const cleanState = {
-            mocks: appState.mocks,
-            timetableStatus: appState.timetableStatus,
-            dailyDrills: appState.dailyDrills
-        };
-        await writable.write(JSON.stringify(cleanState, null, 2));
-        await writable.close();
-        logEvent("Synchronized local file backup: " + fileHandle.name, "success");
-        updateSyncStatus();
-    } catch (err) {
-        logEvent("Failed to sync file content: " + err.message, "error");
-    }
+function clearAllLogs() {
+    if (!confirm("WARNING: Are you sure you want to reset and clear ALL mock test logs?")) return;
+    appState.mocks = [];
+    saveState();
+    renderAllViews();
+    logEvent("All mock test logs have been cleared", "error");
 }
 
-function updateSyncStatus() {
-    const el = document.getElementById("sync-file-status");
-    const syncBtn = document.getElementById("btn-sync-file");
-    const linkBtn = document.getElementById("btn-link-file");
-    if (!el) return;
-
-    if (fileHandle) {
-        el.innerHTML = `<span style="color: #34d399;"><i class="fa-solid fa-cloud-arrow-up"></i> Linked: ${fileHandle.name}</span>`;
-        if (syncBtn) syncBtn.classList.remove("hidden");
-        if (linkBtn) linkBtn.innerHTML = `<i class="fa-solid fa-link-slash"></i> Unlink Git File`;
-    } else {
-        el.innerHTML = `<span style="color: var(--text-muted);"><i class="fa-solid fa-cloud"></i> No file linked</span>`;
-        if (syncBtn) syncBtn.classList.add("hidden");
-        if (linkBtn) linkBtn.innerHTML = `<i class="fa-solid fa-link"></i> Link Git File`;
-    }
+function exportDataJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState.mocks, null, 2));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `AIR10_MockTracker_Backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+    logEvent("Exported backup JSON data file", "success");
 }
 
-function handleLinkToggle() {
-    if (fileHandle) {
-        fileHandle = null;
-        logEvent("Local file unlink confirmed.", "info");
-        updateSyncStatus();
-    } else {
-        linkLocalFile();
-    }
-}
-
-function importDataFromFile(event) {
-    const file = event.target.files[0];
+function importDataJSON(e) {
+    const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function (e) {
-        safeExecute(() => {
-            const rawData = JSON.parse(e.target.result);
-            if (!rawData || (typeof rawData !== 'object')) {
-                throw new Error("Invalid file content formatting. Check failed.");
+    reader.onload = (evt) => {
+        try {
+            const imported = JSON.parse(evt.target.result);
+            if (Array.isArray(imported)) {
+                appState.mocks = imported;
+                saveState();
+                renderAllViews();
+                logEvent(`Imported ${imported.length} mock logs from backup file`, "success");
+                alert(`Successfully imported ${imported.length} test records!`);
+            } else {
+                alert("Invalid file format. Expected a JSON array of mock logs.");
             }
-
-            if (rawData.timetableStatus) appState.timetableStatus = rawData.timetableStatus;
-            if (rawData.mocks) appState.mocks = rawData.mocks;
-            if (rawData.dailyDrills) appState.dailyDrills = rawData.dailyDrills;
-
-            // Save state to LOCALSTORAGE
-            localStorage.setItem('air10_timetable_status', JSON.stringify(appState.timetableStatus));
-            localStorage.setItem('air10_mocks', JSON.stringify(appState.mocks));
-            localStorage.setItem('air10_drills', JSON.stringify(appState.dailyDrills));
-
-            logEvent("State imported and loaded successfully from " + file.name, "success");
-
-            // Re-render components
-            initializeTimetable();
-            initializeDailyChecklist();
-            updateDashboardMetrics();
-            populateHistoryTable();
-
-            // Clear file input value
-            event.target.value = '';
-        }, "ImportJSONFileContent");
+        } catch (err) {
+            alert("Error parsing JSON file: " + err.message);
+        }
     };
     reader.readAsText(file);
 }
 
-function exportData() {
-    safeExecute(() => {
-        const cleanState = {
-            mocks: appState.mocks,
-            timetableStatus: appState.timetableStatus,
-            dailyDrills: appState.dailyDrills
-        };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cleanState));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `timetable_data.json`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-        logEvent("Successfully exported backup JSON file of test performance logs", "success");
-    }, "JSONExportUtility");
-}
+/* TAB 6: MISTAKE VAULT VIEW */
+function renderMistakeVault() {
+    const container = document.getElementById('aggregated-weakness-tags');
+    if (!container) return;
 
-function clearAllAppData() {
-    if (confirm("WARNING: Are you sure you want to clear all mock scores, history logs, and study completion states? This cannot be undone.")) {
-        localStorage.clear();
-        appState.mocks = [];
-        appState.timetableStatus = {};
-        appState.dailyDrills = {
-            lastCheckedDate: new Date().toDateString(),
-            drills: [false, false, false, false, false]
-        };
-
-        logEvent("Cleared all browser local data memory registers", "warn");
-
-        initializeTimetable();
-        initializeDailyChecklist();
-        updateDashboardMetrics();
-        populateHistoryTable();
-
-        // Reset streak HTML
-        localStorage.setItem('air10_quiz_streak', '0');
-        const streakEl = document.getElementById("quiz-streak");
-        if (streakEl) streakEl.innerText = "0 days";
-    }
-}
-
-/* Page Boot initialization bindings */
-document.addEventListener("DOMContentLoaded", () => {
-    logEvent("System booting. Booting database controllers. Target: AIR 10 PO & SO IT.", "info");
-
-    loadState();
-
-    // Bind Form Submit
-    const logForm = document.getElementById("mock-log-form");
-    if (logForm) {
-        logForm.addEventListener("submit", handleMockFormSubmit);
+    const allNotes = appState.mocks.map(m => m.weaknesses).filter(Boolean);
+    if (allNotes.length === 0) {
+        container.innerHTML = '<p class="placeholder-text-small">Weakness tags will generate automatically as you log mock tests.</p>';
+        return;
     }
 
-    // Pre-populate input mock date
-    const dateInput = document.getElementById("mock-date");
-    if (dateInput) {
-        dateInput.value = new Date().toISOString().split('T')[0];
-    }
+    const keywords = ["DI", "Puzzles", "Syllogism", "Speed Math", "Reading Comprehension", "Calculation", "Silly Error", "Grammar", "Time Management", "Inequality", "Quadratic", "Seating Arrangement", "Number Series", "Skip Strategy"];
+    const counts = {};
 
-    // Bind Tab Click events
-    document.querySelectorAll(".menu-item").forEach(item => {
-        item.addEventListener("click", (e) => {
-            e.preventDefault();
-            const tabName = item.dataset.tab;
-            if (tabName) setActiveTab(tabName);
+    allNotes.forEach(note => {
+        keywords.forEach(kw => {
+            if (note.toLowerCase().includes(kw.toLowerCase())) {
+                counts[kw] = (counts[kw] || 0) + 1;
+            }
         });
     });
 
-    // Bind Drill reset
-    const resetDrillsBtn = document.getElementById("btn-reset-drills");
-    if (resetDrillsBtn) {
-        resetDrillsBtn.addEventListener("click", resetDailyChecklist);
-    }
-
-    // Bind Timetable filters
-    document.querySelectorAll("[data-timetable-filter]").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            document.querySelectorAll("[data-timetable-filter]").forEach(el => el.classList.remove("active"));
-            e.target.classList.add("active");
-            const filter = e.target.dataset.timetableFilter;
-            initializeTimetable(filter);
-            logEvent(`Filtered active timetable: displaying "${filter}" days`, "info");
-        });
+    let html = '';
+    Object.entries(counts).forEach(([tag, count]) => {
+        html += `<span class="badge badge-warning" style="margin:4px; display:inline-block;">${tag} (${count}x)</span>`;
     });
 
-    // Bind Utility buttons
-    const linkBtn = document.getElementById("btn-link-file");
-    if (linkBtn) linkBtn.addEventListener("click", handleLinkToggle);
-
-    const syncBtn = document.getElementById("btn-sync-file");
-    if (syncBtn) syncBtn.addEventListener("click", writeStateToLinkedFile);
-
-    const importInput = document.getElementById("input-import-file");
-    if (importInput) importInput.addEventListener("change", importDataFromFile);
-
-    const exportBtn = document.getElementById("btn-export-data");
-    if (exportBtn) exportBtn.addEventListener("click", exportData);
-
-    const clearBtn = document.getElementById("btn-clear-logs");
-    if (clearBtn) clearBtn.addEventListener("click", clearAllAppData);
-
-    const clearSysLogBtn = document.getElementById("btn-clear-sys-logs");
-    if (clearSysLogBtn) {
-        clearSysLogBtn.addEventListener("click", () => {
-            const consoleEl = document.getElementById("sys-log-console");
-            if (consoleEl) {
-                consoleEl.innerHTML = "";
-                appState.systemLogs = [];
-                logEvent("Console logs initialized.", "info");
-            }
-        });
+    if (!html) {
+        html = '<p style="font-size:0.85rem; color:var(--text-muted);">Logged mistake notes: ' + allNotes.length + ' entries recorded. Keep reviewing!</p>';
     }
 
-    // Quiz bindings
-    const startQuizBtn = document.getElementById("btn-start-quiz");
-    if (startQuizBtn) startQuizBtn.addEventListener("click", startQuiz);
-
-    const prevQBtn = document.getElementById("btn-prev-question");
-    if (prevQBtn) prevQBtn.addEventListener("click", () => navigateQuestion(-1));
-
-    const nextQBtn = document.getElementById("btn-next-question");
-    if (nextQBtn) nextQBtn.addEventListener("click", () => navigateQuestion(1));
-
-    const skipQBtn = document.getElementById("btn-skip-question");
-    if (skipQBtn) skipQBtn.addEventListener("click", skipQuestion);
-
-    const submitBtn = document.getElementById("btn-submit-quick");
-    if (submitBtn) {
-        submitBtn.addEventListener("click", () => {
-            if (confirm("Are you sure you want to finish and submit the quiz?")) {
-                submitQuiz(false);
-            }
-        });
-    }
-
-    const restartQuizBtn = document.getElementById("btn-restart-quiz-system");
-    if (restartQuizBtn) restartQuizBtn.addEventListener("click", startQuiz);
-
-    const viewSolutionsBtn = document.getElementById("btn-view-explanations");
-    if (viewSolutionsBtn) {
-        viewSolutionsBtn.addEventListener("click", () => {
-            const pane = document.getElementById("quiz-solutions-pane");
-            if (pane) {
-                pane.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-    }
-
-    // Quiz streak setup
-    const streakCount = parseInt(localStorage.getItem('air10_quiz_streak') || '0');
-    const streakEl = document.getElementById("quiz-streak");
-    if (streakEl) streakEl.innerText = `${streakCount} days`;
-
-    // Setup and render UI elements
-    initializeTimetable();
-    initializeDailyChecklist();
-    updateDashboardMetrics();
-    populateHistoryTable();
-
-    // Calculate initial countdown info
-    const targetExamDate = new Date(2026, 7, 15); // Aug 15, 2026 (index 7 = Aug)
-    const timeDelta = targetExamDate.getTime() - new Date().getTime();
-    const daysLeft = Math.max(0, Math.ceil(timeDelta / (1000 * 60 * 60 * 24)));
-    const countdownEl = document.getElementById("days-remaining");
-    if (countdownEl) countdownEl.innerText = daysLeft;
-    logEvent(`Days remaining until Mid-August 2026 target: ${daysLeft} days. All systems GO!`, "info");
-});
+    container.innerHTML = html;
+}
