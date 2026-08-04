@@ -599,7 +599,7 @@ function renderRecentMocksList() {
             <div class="recent-log-row" style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color); display:flex; justify-between; align-items:center;">
                 <div>
                     <strong style="font-size:0.88rem; color:#fff;">${cat.name} #${m.paperNum}</strong>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">${m.date} | ${m.source}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${formatDateForDisplay(m.date)} | ${m.source}</div>
                 </div>
                 <div style="text-align:right;">
                     <span class="badge badge-accent">${m.score}/${m.totalMarks} Marks</span>
@@ -758,7 +758,42 @@ function render399Matrix(filter = 'all', searchQuery = '') {
     grid.innerHTML = html || '<p class="placeholder-text text-center span-2">No matching mock test series found.</p>';
 }
 
-function openFormForPaper(categoryId, paperNum) {
+function formatDateForInput(dateStr) {
+    if (!dateStr) return new Date().toISOString().split('T')[0];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+
+    // Handle "DD/MM/YYYY" format
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+        const p = dateStr.split('/');
+        return `${p[2]}-${p[1]}-${p[0]}`;
+    }
+
+    // Handle "Aug 2", "Aug 02", "August 2", etc.
+    const match = String(dateStr).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d+)/i);
+    if (match) {
+        const months = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+        const m = months[match[1].toLowerCase().substring(0, 3)];
+        const day = String(match[2]).padStart(2, '0');
+        return `2026-${m}-${day}`;
+    }
+
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+        return d.toISOString().split('T')[0];
+    }
+    return new Date().toISOString().split('T')[0];
+}
+
+function formatDateForDisplay(dateStr) {
+    if (!dateStr) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const parts = dateStr.split('-');
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+}
+
+function openFormForPaper(categoryId, paperNum, scheduledDate = null) {
     switchTab('log-mock');
     const catSelect = document.getElementById('mock-category-select');
     if (catSelect) {
@@ -767,6 +802,11 @@ function openFormForPaper(categoryId, paperNum) {
         const paperSelect = document.getElementById('mock-paper-num');
         if (paperSelect) paperSelect.value = paperNum;
         applyCategoryDefaults(categoryId);
+    }
+
+    const dateInput = document.getElementById('mock-date');
+    if (dateInput) {
+        dateInput.value = formatDateForInput(scheduledDate || new Date().toISOString().split('T')[0]);
     }
 }
 
@@ -805,9 +845,14 @@ function renderIBPSPOTracker() {
 
             daysHtml += `
                 <div class="ibps-day-card card glass-card" style="margin-bottom: 15px; padding: 16px;">
-                    <div style="display:flex; justify-between; align-items:center; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <strong style="color:var(--accent); font-size:1rem;">${day.date} Strategy Routine</strong>
-                        <span class="badge badge-primary">Phase ${pNum}</span>
+                        <div>
+                            <button class="btn btn-sm btn-outline" style="margin-right:8px;" onclick="openFormForPaper('prelims_full', 1, '${day.date}')" title="Log Test for ${day.date}">
+                                <i class="fa-solid fa-plus"></i> Log Mock for ${day.date}
+                            </button>
+                            <span class="badge badge-primary">Phase ${pNum}</span>
+                        </div>
                     </div>
                     <div class="ibps-session-row" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
                         <label class="session-chk-box ${mDone ? 'completed' : ''}" style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid var(--border-color); cursor:pointer;">
@@ -874,7 +919,9 @@ function initCategoryFormOptions() {
     });
 
     const dateInput = document.getElementById('mock-date');
-    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+    if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
 }
 
 function updatePaperNumOptions(catId) {
@@ -953,7 +1000,8 @@ function saveMockLogFromForm() {
         const editId = document.getElementById('edit-mock-id').value;
         const categoryId = document.getElementById('mock-category-select').value;
         const paperNum = parseInt(document.getElementById('mock-paper-num').value);
-        const date = document.getElementById('mock-date').value;
+        const rawDate = document.getElementById('mock-date').value;
+        const date = formatDateForInput(rawDate);
         const source = document.getElementById('mock-series').value.trim();
         const duration = parseFloat(document.getElementById('mock-duration').value);
         const totalQs = parseFloat(document.getElementById('mock-total-qs').value);
@@ -996,10 +1044,10 @@ function saveMockLogFromForm() {
         if (editId) {
             const index = appState.mocks.findIndex(m => m.id === editId);
             if (index !== -1) appState.mocks[index] = mockObj;
-            logEvent(`Updated mock log #${paperNum} for ${categoryId}`, 'success');
+            logEvent(`Updated mock log #${paperNum} for ${categoryId} on date ${date}`, 'success');
         } else {
             appState.mocks.unshift(mockObj);
-            logEvent(`Logged new score: ${score}/${totalMarks} for ${MOCK_SERIES_CATALOG[categoryId]?.name || categoryId} #${paperNum}`, 'success');
+            logEvent(`Logged new score: ${score}/${totalMarks} for ${MOCK_SERIES_CATALOG[categoryId]?.name || categoryId} #${paperNum} on date ${date}`, 'success');
         }
 
         saveState();
@@ -1025,7 +1073,7 @@ function editMockLog(mockId) {
         document.getElementById('mock-paper-num').value = mock.paperNum;
     }
 
-    document.getElementById('mock-date').value = mock.date;
+    document.getElementById('mock-date').value = formatDateForInput(mock.date);
     document.getElementById('mock-series').value = mock.source;
     document.getElementById('mock-duration').value = mock.duration;
     document.getElementById('mock-total-qs').value = mock.totalQs;
@@ -1115,7 +1163,7 @@ function renderAnalyticsTable() {
         const cat = MOCK_SERIES_CATALOG[m.categoryId] || { name: m.categoryId };
         html += `
             <tr>
-                <td>${m.date}</td>
+                <td>${formatDateForDisplay(m.date)}</td>
                 <td><strong style="color:#fff;">${cat.name}</strong></td>
                 <td><span class="badge badge-accent">Paper #${m.paperNum}</span></td>
                 <td>${escapeHtml(m.source)}</td>
