@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS adda_mock_logs (
     percentile NUMERIC,
     cutoff NUMERIC,
     weaknesses TEXT,
+    topic_name TEXT,
     accuracy NUMERIC,
     score_pct NUMERIC,
     unattempted NUMERIC,

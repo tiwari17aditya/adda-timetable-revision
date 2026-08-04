@@ -1958,9 +1958,9 @@ body {
 
 .paper-badge-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
     gap: 8px;
-    max-height: 200px;
+    max-height: 240px;
     overflow-y: auto;
     padding-right: 4px;
 }
@@ -1971,7 +1971,7 @@ body {
     border: 1px solid var(--border-color);
     background: rgba(255, 255, 255, 0.03);
     color: var(--text-muted);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -1979,6 +1979,10 @@ body {
     cursor: pointer;
     transition: var(--transition-smooth);
     position: relative;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .paper-badge:hover {

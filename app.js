@@ -321,11 +321,11 @@ async function saveStateToNeon() {
                 const sql = `
                     INSERT INTO adda_mock_logs (
                         id, category_id, paper_num, date, source, duration, total_qs, total_marks,
-                        attempted, correct, wrong, score, percentile, cutoff, weaknesses, accuracy, score_pct, unattempted, speed
+                        attempted, correct, wrong, score, percentile, cutoff, weaknesses, topic_name, accuracy, score_pct, unattempted, speed
                     ) VALUES (
                         ${esc(m.id)}, ${esc(m.categoryId)}, ${m.paperNum || 0}, ${esc(m.date)}, ${esc(m.source)},
                         ${m.duration || 0}, ${m.totalQs || 0}, ${m.totalMarks || 0}, ${m.attempted || 0}, ${m.correct || 0}, ${m.wrong || 0},
-                        ${m.score || 0}, ${m.percentile || 0}, ${m.cutoff || 0}, ${esc(m.weaknesses)}, ${m.accuracy || 0}, ${m.scorePct || 0},
+                        ${m.score || 0}, ${m.percentile || 0}, ${m.cutoff || 0}, ${esc(m.weaknesses)}, ${esc(m.topicName)}, ${m.accuracy || 0}, ${m.scorePct || 0},
                         ${m.unattempted || 0}, ${m.speed || 0}
                     )
                     ON CONFLICT (id) DO UPDATE SET
@@ -343,6 +343,7 @@ async function saveStateToNeon() {
                         percentile = EXCLUDED.percentile,
                         cutoff = EXCLUDED.cutoff,
                         weaknesses = EXCLUDED.weaknesses,
+                        topic_name = EXCLUDED.topic_name,
                         accuracy = EXCLUDED.accuracy,
                         score_pct = EXCLUDED.score_pct,
                         unattempted = EXCLUDED.unattempted,
@@ -407,6 +408,7 @@ function migrateMockRecords(mocksArray) {
             percentile: parseFloat(m.percentile) || 0,
             cutoff: parseFloat(m.cutoff) || 0,
             weaknesses: m.weaknesses || '',
+            topicName: m.topicName || m.topic_name || '',
             accuracy: accuracy,
             scorePct: scorePct,
             unattempted: parseFloat(m.unattempted) || Math.max(0, totalQs - attempted),
@@ -460,6 +462,7 @@ async function loadStateFromNeon() {
                 percentile: parseFloat(item.percentile) || 0,
                 cutoff: parseFloat(item.cutoff) || 0,
                 weaknesses: item.weaknesses || "",
+                topicName: item.topic_name || "",
                 accuracy: parseFloat(item.accuracy) || 0,
                 scorePct: parseFloat(item.score_pct) || 0,
                 unattempted: parseFloat(item.unattempted) || 0,
@@ -788,11 +791,13 @@ function render399Matrix(filter = 'all', searchQuery = '') {
         for (let i = 1; i <= cat.totalPapers; i++) {
             const mockAttempt = loggedMocks.find(m => parseInt(m.paperNum) === i);
             if (mockAttempt) {
+                const badgeLabel = mockAttempt.topicName ? escapeHtml(mockAttempt.topicName) : `#${i}`;
+                const topicSub = mockAttempt.topicName ? `<br><small style="color:#a7f3d0;">Topic: ${escapeHtml(mockAttempt.topicName)}</small>` : '';
                 badgesHtml += `
-                    <div class="paper-badge completed" onclick="editMockLog('${mockAttempt.id}')">
-                        #${i}
+                    <div class="paper-badge completed" onclick="editMockLog('${mockAttempt.id}')" title="${escapeHtml(mockAttempt.topicName || 'Paper #' + i)}">
+                        ${badgeLabel}
                         <span class="badge-tooltip">
-                            Paper #${i}<br>
+                            Paper #${i}${topicSub}<br>
                             Score: ${mockAttempt.score}/${mockAttempt.totalMarks}<br>
                             Acc: ${mockAttempt.accuracy}% | ${mockAttempt.percentile}%ile
                         </span>
@@ -1085,6 +1090,7 @@ function saveMockLogFromForm() {
         const editId = document.getElementById('edit-mock-id').value;
         const categoryId = document.getElementById('mock-category-select').value;
         const paperNum = parseInt(document.getElementById('mock-paper-num').value);
+        const topicName = document.getElementById('mock-topic-name')?.value.trim() || '';
         const rawDate = document.getElementById('mock-date').value;
         const date = formatDateForInput(rawDate);
         const source = document.getElementById('mock-series').value.trim();
@@ -1108,6 +1114,7 @@ function saveMockLogFromForm() {
             id: editId || `mock_${Date.now()}`,
             categoryId,
             paperNum,
+            topicName,
             date,
             source,
             duration,
@@ -1158,6 +1165,9 @@ function editMockLog(mockId) {
         document.getElementById('mock-paper-num').value = mock.paperNum;
     }
 
+    if (document.getElementById('mock-topic-name')) {
+        document.getElementById('mock-topic-name').value = mock.topicName || '';
+    }
     document.getElementById('mock-date').value = formatDateForInput(mock.date);
     document.getElementById('mock-series').value = mock.source;
     document.getElementById('mock-duration').value = mock.duration;
@@ -1180,6 +1190,9 @@ function editMockLog(mockId) {
 function resetForm() {
     document.getElementById('mock-log-form')?.reset();
     document.getElementById('edit-mock-id').value = '';
+    if (document.getElementById('mock-topic-name')) {
+        document.getElementById('mock-topic-name').value = '';
+    }
     document.getElementById('form-title').textContent = "Log Mock Test Result";
     document.getElementById('btn-save-mock').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Mock Score';
     document.getElementById('btn-cancel-edit').classList.add('hidden');
@@ -1232,7 +1245,7 @@ function renderAnalyticsTable() {
     let filtered = appState.mocks.filter(m => {
         if (selectedCat !== 'all' && m.categoryId !== selectedCat) return false;
         if (searchQuery) {
-            const text = `${MOCK_SERIES_CATALOG[m.categoryId]?.name || ''} ${m.source} ${m.weaknesses} ${m.date}`.toLowerCase();
+            const text = `${MOCK_SERIES_CATALOG[m.categoryId]?.name || ''} ${m.source} ${m.topicName} ${m.weaknesses} ${m.date}`.toLowerCase();
             if (!text.includes(searchQuery)) return false;
         }
         return true;
@@ -1246,10 +1259,11 @@ function renderAnalyticsTable() {
     let html = '';
     filtered.forEach(m => {
         const cat = MOCK_SERIES_CATALOG[m.categoryId] || { name: m.categoryId };
+        const topicTag = m.topicName ? `<br><small style="color:var(--accent); font-weight:600;">📌 ${escapeHtml(m.topicName)}</small>` : '';
         html += `
             <tr>
                 <td>${formatDateForDisplay(m.date)}</td>
-                <td><strong style="color:#fff;">${cat.name}</strong></td>
+                <td><strong style="color:#fff;">${cat.name}</strong>${topicTag}</td>
                 <td><span class="badge badge-accent">Paper #${m.paperNum}</span></td>
                 <td>${escapeHtml(m.source)}</td>
                 <td><strong>${m.score}</strong> / ${m.totalMarks} <small style="color:var(--text-muted);">(${m.scorePct}%)</small></td>
