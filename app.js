@@ -366,14 +366,72 @@ async function saveStateToNeon() {
     }
 }
 
+function migrateMockRecords(mocksArray) {
+    if (!Array.isArray(mocksArray)) return [];
+    const catCounters = {};
+
+    return mocksArray.map((m, index) => {
+        let catId = m.categoryId;
+        if (!catId) {
+            const t = (m.type || '').toLowerCase();
+            if (t.includes('mains')) catId = 'mains_full';
+            else if (t.includes('it') || t.includes('so')) catId = 'mains_subject_2026';
+            else catId = 'prelims_full';
+        }
+
+        if (!catCounters[catId]) catCounters[catId] = 0;
+        catCounters[catId]++;
+
+        const paperNum = parseInt(m.paperNum) || catCounters[catId];
+        const totalMarks = parseFloat(m.totalMarks || m.total) || 100;
+        const totalQs = parseFloat(m.totalQs) || 100;
+        const attempted = parseFloat(m.attempted) || 0;
+        const correct = parseFloat(m.correct) || 0;
+        const score = parseFloat(m.score) || 0;
+        const accuracy = parseFloat(m.accuracy) || (attempted > 0 ? parseFloat(((correct / attempted) * 100).toFixed(2)) : 0);
+        const scorePct = parseFloat(m.scorePct) || (totalMarks > 0 ? parseFloat(((score / totalMarks) * 100).toFixed(2)) : 0);
+
+        return {
+            id: m.id || `mock_${Date.now()}_${index}`,
+            categoryId: catId,
+            paperNum: paperNum,
+            date: formatDateForInput(m.date),
+            source: m.source || m.series || 'Adda247',
+            duration: parseFloat(m.duration) || 60,
+            totalQs: totalQs,
+            totalMarks: totalMarks,
+            attempted: attempted,
+            correct: correct,
+            wrong: parseFloat(m.wrong) || 0,
+            score: score,
+            percentile: parseFloat(m.percentile) || 0,
+            cutoff: parseFloat(m.cutoff) || 0,
+            weaknesses: m.weaknesses || '',
+            accuracy: accuracy,
+            scorePct: scorePct,
+            unattempted: parseFloat(m.unattempted) || Math.max(0, totalQs - attempted),
+            speed: parseFloat(m.speed) || 0
+        };
+    });
+}
+
 function loadState() {
     safeExecute(() => {
-        const storedMocks = localStorage.getItem('air10_mocks_v2') || localStorage.getItem('air10_mocks');
+        const storedV2 = localStorage.getItem('air10_mocks_v2');
+        const storedOld = localStorage.getItem('air10_mocks');
         const storedIbps = localStorage.getItem('air10_ibps_checked');
 
-        if (storedMocks) appState.mocks = JSON.parse(storedMocks);
+        let rawMocks = [];
+        if (storedV2) {
+            rawMocks = JSON.parse(storedV2);
+        } else if (storedOld) {
+            rawMocks = JSON.parse(storedOld);
+        }
+
+        appState.mocks = migrateMockRecords(rawMocks);
+
         if (storedIbps) appState.ibpsChecked = JSON.parse(storedIbps);
-        logEvent("Loaded state from local storage", "info");
+        logEvent("Loaded and migrated " + appState.mocks.length + " mock records from local storage", "info");
 
         // Asynchronously load & merge from Neon Cloud DB
         loadStateFromNeon();
@@ -386,10 +444,10 @@ async function loadStateFromNeon() {
         let updated = false;
 
         if (logsRes && logsRes.rows && logsRes.rows.length > 0) {
-            appState.mocks = logsRes.rows.map(item => ({
+            const dbMocks = logsRes.rows.map(item => ({
                 id: item.id,
                 categoryId: item.category_id,
-                paperNum: item.paper_num,
+                paperNum: parseInt(item.paper_num) || 1,
                 date: item.date,
                 source: item.source,
                 duration: parseFloat(item.duration) || 0,
@@ -407,22 +465,38 @@ async function loadStateFromNeon() {
                 unattempted: parseFloat(item.unattempted) || 0,
                 speed: parseFloat(item.speed) || 0
             }));
+
+            // Smart Non-Destructive Merge: Combine DB records & Local records
+            const mergedMap = new Map();
+            dbMocks.forEach(m => mergedMap.set(m.id, m));
+            appState.mocks.forEach(m => {
+                if (!mergedMap.has(m.id)) {
+                    mergedMap.set(m.id, m);
+                }
+            });
+
+            appState.mocks = Array.from(mergedMap.values());
             updated = true;
         }
 
         const ibpsRes = await executeNeonQuery("SELECT * FROM adda_ibps_checked;");
         if (ibpsRes && ibpsRes.rows && ibpsRes.rows.length > 0) {
-            const map = {};
-            ibpsRes.rows.forEach(item => { map[item.id] = Boolean(item.checked); });
-            appState.ibpsChecked = map;
+            ibpsRes.rows.forEach(item => {
+                appState.ibpsChecked[item.id] = Boolean(item.checked);
+            });
             updated = true;
         }
 
         if (updated) {
             localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
             localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
-            logEvent("Synchronized live global data from Neon Postgres Database", "success");
+            logEvent("Synchronized live global data from Neon Postgres Database (" + appState.mocks.length + " total records)", "success");
             renderAllViews();
+        }
+
+        // Push any unsynced local records up to Neon Postgres DB
+        if (appState.mocks.length > 0) {
+            saveStateToNeon();
         }
     } catch (err) {
         logEvent("Neon cloud load fallback to LocalStorage: " + err.message, "info");
