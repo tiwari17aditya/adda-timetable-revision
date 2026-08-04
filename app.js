@@ -836,9 +836,9 @@ function formatDateForInput(dateStr) {
     if (!dateStr) return new Date().toISOString().split('T')[0];
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
 
-    // Handle "DD/MM/YYYY" format
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
-        const p = dateStr.split('/');
+    // Handle "DD:MM:YYYY", "DD/MM/YYYY", "DD-MM-YYYY" formats
+    if (/^\d{2}[\:\/\-]\d{2}[\:\/\-]\d{4}$/.test(dateStr)) {
+        const p = dateStr.split(/[\:\/\-]/);
         return `${p[2]}-${p[1]}-${p[0]}`;
     }
 
@@ -862,7 +862,18 @@ function formatDateForDisplay(dateStr) {
     if (!dateStr) return '';
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
         const parts = dateStr.split('-');
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return `${parts[2]}:${parts[1]}:${parts[0]}`;
+    }
+    if (/^\d{2}[\:\/\-]\d{2}[\:\/\-]\d{4}$/.test(dateStr)) {
+        const parts = dateStr.split(/[\:\/\-]/);
+        return `${parts[0]}:${parts[1]}:${parts[2]}`;
+    }
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}:${month}:${year}`;
     }
     return dateStr;
 }
