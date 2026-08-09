@@ -346,14 +346,18 @@ function closeNeonConfigModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-function saveNeonConnectionFromUI() {
+async function saveNeonConnectionFromUI() {
     const input = document.getElementById('neon-conn-input');
     const val = input ? input.value.trim() : '';
     if (val) {
         localStorage.setItem('air10_neon_conn_string', val);
         logEvent("Configured custom Neon Postgres connection string", "success");
-        closeNeonConfigModal();
-        loadStateFromNeon();
+        try {
+            await loadStateFromNeon();
+            closeNeonConfigModal();
+        } catch (err) {
+            openNeonConfigModal();
+        }
     } else {
         clearNeonConnectionFromUI();
     }
@@ -363,17 +367,28 @@ function clearNeonConnectionFromUI() {
     localStorage.removeItem('air10_neon_conn_string');
     const input = document.getElementById('neon-conn-input');
     if (input) input.value = '';
+    const errEl = document.getElementById('neon-modal-error');
+    if (errEl) errEl.style.display = 'none';
     logEvent("Cleared Neon Postgres connection string", "info");
     closeNeonConfigModal();
     updateSyncIndicator('unconfigured');
 }
 
-
-
 function updateSyncIndicator(status, message = '') {
     const badgeEl = document.getElementById('db-sync-badge');
     const iconEl = document.getElementById('db-sync-icon');
     const textEl = document.getElementById('db-sync-text');
+    const errEl = document.getElementById('neon-modal-error');
+
+    if (errEl) {
+        if (status === 'error' && message) {
+            errEl.textContent = `❌ ${message}`;
+            errEl.style.display = 'block';
+        } else {
+            errEl.style.display = 'none';
+        }
+    }
+
     if (!badgeEl || !iconEl || !textEl) return;
 
     badgeEl.className = `db-sync-badge status-${status}`;
@@ -395,6 +410,7 @@ function updateSyncIndicator(status, message = '') {
         badgeEl.title = message || 'Neon Cloud DB Sync Failed (Offline/Fallback Mode)';
     }
 }
+
 
 
 const safeNum = (v, fallback = 0) => {
