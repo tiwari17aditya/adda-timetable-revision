@@ -346,7 +346,7 @@ function saveNeonConnectionFromUI() {
         localStorage.setItem('air10_neon_conn_string', val);
         logEvent("Configured custom Neon Postgres connection string", "success");
         closeNeonConfigModal();
-        saveStateToNeon();
+        loadStateFromNeon();
     } else {
         localStorage.removeItem('air10_neon_conn_string');
         logEvent("Cleared Neon Postgres connection string", "info");
@@ -354,6 +354,7 @@ function saveNeonConnectionFromUI() {
         updateSyncIndicator('unconfigured');
     }
 }
+
 
 function updateSyncIndicator(status, message = '') {
     const badgeEl = document.getElementById('db-sync-badge');
