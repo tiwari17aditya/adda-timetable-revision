@@ -302,8 +302,8 @@ function getNeonSqlUrl() {
 }
 
 
-// Vercel proxy URL — eliminates browser CORS preflight issues with custom Neon-Connection-String header
-const NEON_PROXY_URL = 'https://adda-timetable-revision.vercel.app/api/neon';
+// Vercel proxy URL — relative path works since frontend & API are on same Vercel domain
+const NEON_PROXY_URL = '/api/neon';
 
 async function executeNeonQuery(sqlQuery) {
     const connStr = getNeonConnectionString();
