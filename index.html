@@ -93,13 +93,19 @@
                     </div>
                     <div class="stat-card" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
                         <span class="stat-label" style="margin-bottom:4px;">Neon DB</span>
-                        <div class="db-sync-badge status-synced" id="db-sync-badge" title="Neon Postgres DB Status">
-                            <i class="fa-solid fa-cloud-check" id="db-sync-icon"></i>
-                            <span id="db-sync-text">Synced</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <div class="db-sync-badge status-synced" id="db-sync-badge" onclick="openNeonConfigModal()" style="cursor:pointer;" title="Click to configure Neon Database Connection">
+                                <i class="fa-solid fa-cloud-check" id="db-sync-icon"></i>
+                                <span id="db-sync-text">Synced</span>
+                            </div>
+                            <button onclick="openNeonConfigModal()" title="Database Connection Settings" style="background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:#fff; border-radius:6px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                                <i class="fa-solid fa-gear" style="font-size:0.75rem;"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             </header>
+
 
 
             <!-- TAB 1: OVERVIEW DASHBOARD -->
@@ -477,9 +483,31 @@
         </main>
     </div>
 
+    <!-- Neon DB Connection Config Modal -->
+    <div id="neon-config-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-database text-accent"></i> Configure Neon Postgres Connection</h3>
+                <button class="btn-close" onclick="closeNeonConfigModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Paste your rotated Neon PostgreSQL Connection String below. It is stored securely in your browser's LocalStorage and never committed to source code.</p>
+                <div class="form-group">
+                    <label for="neon-conn-input">Connection String (URL)</label>
+                    <input type="password" id="neon-conn-input" placeholder="postgresql://neondb_owner:npg_...@ep-...neon.tech/neondb?sslmode=require" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); color:#fff; font-family:monospace;">
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button class="btn btn-outline" onclick="closeNeonConfigModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveNeonConnectionFromUI()"><i class="fa-solid fa-floppy-disk"></i> Save Connection</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Supabase JS Client for Permanent Global Cloud Sync -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
+
 
 </html>
