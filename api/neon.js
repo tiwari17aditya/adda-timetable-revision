@@ -2,7 +2,7 @@
 // Acts as a CORS-safe proxy for Neon HTTP SQL API
 // Browser sends simple JSON POST here, this function adds Neon-Connection-String header
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     // Allow CORS from any origin (GitHub Pages, local dev, etc.)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { query, connStr } = req.body;
+    const { query, connStr } = req.body || {};
 
     if (!query || !connStr) {
         return res.status(400).json({ error: 'Missing query or connStr in request body' });
@@ -50,4 +50,4 @@ export default async function handler(req, res) {
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
-}
+};
