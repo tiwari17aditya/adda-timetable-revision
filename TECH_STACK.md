@@ -2,7 +2,7 @@
 
 ## TARGET AIR 10: Banking Exam 2026 Mock Test Tracker & Strategy Suite
 
-A high-performance, single-page web application (SPA) built for tracking **399 test papers** across **20 mock test categories** and the **IBPS PO Aug 2 - Aug 22 Daily Strategy Routine**, backed by a cloud serverless database and automated GitHub deployment.
+A high-performance, single-page web application (SPA) built for tracking **399 test papers** across **20 mock test categories** and the **IBPS PO Aug 2 - Aug 22 Daily Strategy Routine**, backed by a cloud serverless database and automated Vercel deployment.
 
 ---
 
@@ -16,13 +16,15 @@ A high-performance, single-page web application (SPA) built for tracking **399 t
 | **Styling & Design** | Vanilla CSS3 Variables | HSL tokenized color palette, dark-mode glassmorphism, responsive grid & flexbox layouts |
 | **Typography** | Google Fonts | `Outfit` (Headings) & `Plus Jakarta Sans` (Body text) |
 | **Icons** | FontAwesome 6.4.0 | Vector icons for cards, navigation, badges, and metrics |
-| **Cloud Database** | **Neon Serverless Postgres** | PostgreSQL database (`ep-crimson-forest-ayk2jth0.c-5.us-east-2.aws.neon.tech`) connected via Neon HTTP API |
+| **Cloud Database** | **Neon Serverless Postgres** | PostgreSQL database (`ep-crimson-forest-ayk2jth0.c-5.us-east-2.aws.neon.tech`) connected via serverless proxy |
+| **Serverless Proxy** | **Vercel Serverless Function** (`api/neon.js`) | CORS-safe HTTP proxy that adds `Neon-Connection-String` header — eliminates browser preflight issues |
+| **DB Credential Storage** | Browser `localStorage` (`air10_neon_conn_string`) | Connection string stored client-side only, never committed to source code |
 | **Offline Storage** | HTML5 LocalStorage | Client-side fallback database (`air10_mocks_v2`, `air10_ibps_checked`) for instant load |
 | **Data Backup** | JSON Serialization | Native JSON export/import tool for user backup portability |
-| **Version Control** | Git | Distributed version control with `main` and `gh-pages` branches |
+| **Version Control** | Git | Distributed version control with `main` branch |
 | **Source Repository** | GitHub | Host repo: [https://github.com/tiwari17aditya/adda-timetable-revision](https://github.com/tiwari17aditya/adda-timetable-revision) |
-| **CI/CD Pipeline** | GitHub Actions | Deployment workflow ([.github/workflows/deploy.yml](file:///d:/Antigravity-Projects/adda-timetable-revision/.github/workflows/deploy.yml)) |
-| **Web Hosting** | GitHub Pages | Live web hosting: [https://tiwari17aditya.github.io/adda-timetable-revision/](https://tiwari17aditya.github.io/adda-timetable-revision/) |
+| **CI/CD Pipeline** | Vercel Auto-Deploy | Vercel connected to GitHub — auto-deploys on every push to `main` |
+| **Web Hosting** | **Vercel** | Live web hosting: [https://adda-timetable-revision.vercel.app](https://adda-timetable-revision.vercel.app) |
 | **Agent Skill Rules**| AGENTS.md & SKILLS | Custom AI Agent rules ([.agents/AGENTS.md](file:///d:/Antigravity-Projects/adda-timetable-revision/.agents/AGENTS.md) and [.agents/skills/mock-tracker-optimization/SKILL.md](file:///d:/Antigravity-Projects/adda-timetable-revision/.agents/skills/mock-tracker-optimization/SKILL.md)) |
 
 ---
@@ -82,13 +84,18 @@ adda-timetable-revision/
 │           └── SKILL.md                         # Mock tracker catalog & calculation specifications
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml                           # GitHub Actions automated deployment workflow
+│       └── deploy.yml                           # Vercel auto-deployment trigger on git push
+├── api/
+│   └── neon.js                                  # Vercel serverless proxy for Neon HTTP SQL API (CORS-safe)
 ├── IBPS_PO_Detailed_Daily_Tracker.pdf           # Original IBPS PO Strategy PDF tracker
 ├── TECH_STACK.md                                # Technology stack documentation
+├── TOKEN_TRACKING.md                            # Session milestone & feature change log
+├── NEXT_ENHANCEMENTS.md                         # Enhancement queue & completed priorities
 ├── schema.sql                                   # Neon Postgres SQL DDL script
+├── vercel.json                                  # Vercel deployment configuration
 ├── index.html                                   # Core application HTML single-page view
 ├── app.js                                       # Application business logic & database adapter
-├── styles.css                                  # Custom dark-mode glassmorphism design system
+├── styles.css                                   # Custom dark-mode glassmorphism design system
 └── timetable_data.json                          # Supplementary timetable data reference
 ```
 
@@ -99,8 +106,10 @@ adda-timetable-revision/
 ```mermaid
 graph TD
     A[Local Developer / Agent Code Commit] -->|git push origin main| B[GitHub Repository]
-    B --> C[GitHub Actions Trigger: deploy.yml]
-    C --> D[Build & Package Static Assets]
-    D --> E[Deploy to gh-pages Branch]
-    E --> F[Live Site: https://tiwari17aditya.github.io/adda-timetable-revision/]
+    B --> C[Vercel Auto-Deploy Trigger]
+    C --> D[Build Static Assets + Serverless Functions]
+    D --> E[Live Site: https://adda-timetable-revision.vercel.app]
+    E --> F[Browser calls /api/neon proxy]
+    F --> G[Vercel Function adds Neon-Connection-String header]
+    G --> H[Neon Postgres Cloud DB]
 ```

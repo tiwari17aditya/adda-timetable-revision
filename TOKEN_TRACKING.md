@@ -37,6 +37,9 @@
 | 17 | Priority 1: `safeNum`/`safeInt` SQL input guards for empty field protection | `app.js` | ✅ |
 | 18 | Priority 2: Form default prefill for category selection (`prelims_full`) | `app.js` | ✅ |
 | 19 | Priority 3: Real-time Cloud DB Sync status badge indicator (🟢 Synced / 🔵 Syncing / 🔴 Error) | `index.html`, `styles.css`, `app.js` | ✅ |
+| 20 | **Security**: Removed hardcoded Neon credentials; dynamic DB settings modal with `localStorage` storage | `app.js`, `index.html` | ✅ |
+| 21 | **Proxy**: Vercel serverless `/api/neon.js` to bypass browser CORS preflight on Neon HTTP API | `api/neon.js`, `vercel.json` | ✅ |
+| 22 | **Migration**: Switched hosting from GitHub Pages → **Vercel** (same-domain static + serverless) | `.github/workflows/deploy.yml`, `vercel.json`, `app.js` | ✅ |
 
 ---
 
@@ -47,6 +50,8 @@
 | Total Test Papers | 399 across 20 categories |
 | Daily Routine Sessions | 63 sessions across 21 days |
 | Database Tables | `adda_mock_logs`, `adda_ibps_checked` |
-| Live URL | https://tiwari17aditya.github.io/adda-timetable-revision/ |
+| Live URL | https://adda-timetable-revision.vercel.app |
+| API Proxy | https://adda-timetable-revision.vercel.app/api/neon |
 | Status Indicator | Real-time Neon Cloud DB Sync Badge |
+| Last Updated | 2026-08-09 |
 
