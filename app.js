@@ -278,24 +278,45 @@ function safeExecute(fn, context) {
     }
 }
 
-/* Neon Serverless Postgres Cloud Sync */
-const NEON_CONN_STRING = "postgresql://neondb_owner:npg_b9yrSdxR4FlT@ep-crimson-forest-ayk2jth0.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require";
-const NEON_SQL_URL = "https://ep-crimson-forest-ayk2jth0.c-5.us-east-2.aws.neon.tech/sql";
+/* Dynamic Neon Serverless Postgres Cloud Sync (No Hardcoded Secrets) */
+function getNeonConnectionString() {
+    return localStorage.getItem('air10_neon_conn_string') || '';
+}
+
+function getNeonSqlUrl() {
+    const connStr = getNeonConnectionString();
+    if (!connStr) return '';
+    const match = connStr.match(/@([^:\/\?]+)/);
+    if (match && match[1]) {
+        return `https://${match[1]}/sql`;
+    }
+    return '';
+}
 
 async function executeNeonQuery(sqlQuery) {
-    const response = await fetch(NEON_SQL_URL, {
+    const connStr = getNeonConnectionString();
+    const sqlUrl = getNeonSqlUrl();
+
+    if (!connStr || !sqlUrl) {
+        updateSyncIndicator('unconfigured');
+        throw new Error("Neon DB connection string not configured. Please click the Settings gear icon to paste your rotated Connection String.");
+    }
+
+    const response = await fetch(sqlUrl, {
         method: 'POST',
         headers: {
-            'Neon-Connection-String': NEON_CONN_STRING,
+            'Neon-Connection-String': connStr,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ query: sqlQuery })
     });
+
     if (!response.ok) {
         const errText = await response.text();
         logEvent(`Neon DB HTTP Error (${response.status}): ${errText}`, "error");
         throw new Error(`HTTP ${response.status}: ${errText}`);
     }
+
     const data = await response.json();
     if (data.error) {
         logEvent(`Neon DB SQL Error: ${data.error}`, "error");
@@ -304,6 +325,33 @@ async function executeNeonQuery(sqlQuery) {
     return data;
 }
 
+function openNeonConfigModal() {
+    const modal = document.getElementById('neon-config-modal');
+    const input = document.getElementById('neon-conn-input');
+    if (modal) modal.classList.remove('hidden');
+    if (input) input.value = getNeonConnectionString();
+}
+
+function closeNeonConfigModal() {
+    const modal = document.getElementById('neon-config-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function saveNeonConnectionFromUI() {
+    const input = document.getElementById('neon-conn-input');
+    const val = input ? input.value.trim() : '';
+    if (val) {
+        localStorage.setItem('air10_neon_conn_string', val);
+        logEvent("Configured custom Neon Postgres connection string", "success");
+        closeNeonConfigModal();
+        saveStateToNeon();
+    } else {
+        localStorage.removeItem('air10_neon_conn_string');
+        logEvent("Cleared Neon Postgres connection string", "info");
+        closeNeonConfigModal();
+        updateSyncIndicator('unconfigured');
+    }
+}
 
 function updateSyncIndicator(status, message = '') {
     const badgeEl = document.getElementById('db-sync-badge');
@@ -320,12 +368,17 @@ function updateSyncIndicator(status, message = '') {
         iconEl.className = 'fa-solid fa-cloud-check';
         textEl.textContent = 'Synced';
         badgeEl.title = 'Live Neon Postgres DB Connected';
+    } else if (status === 'unconfigured') {
+        iconEl.className = 'fa-solid fa-cloud-slash';
+        textEl.textContent = 'Setup DB';
+        badgeEl.title = 'Click Settings to paste your rotated Neon Connection String';
     } else if (status === 'error') {
         iconEl.className = 'fa-solid fa-triangle-exclamation';
         textEl.textContent = 'Sync Error';
         badgeEl.title = message || 'Neon Cloud DB Sync Failed (Offline/Fallback Mode)';
     }
 }
+
 
 const safeNum = (v, fallback = 0) => {
     const n = typeof v === 'number' ? v : parseFloat(v);
