@@ -288,10 +288,12 @@ function getNeonSqlUrl() {
     if (!connStr) return '';
     const match = connStr.match(/@([^:\/\?]+)/);
     if (match && match[1]) {
-        return `https://${match[1]}/sql`;
+        const host = match[1].replace('-pooler', '');
+        return `https://${host}/sql`;
     }
     return '';
 }
+
 
 async function executeNeonQuery(sqlQuery) {
     const connStr = getNeonConnectionString();
