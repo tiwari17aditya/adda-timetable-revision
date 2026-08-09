@@ -303,6 +303,38 @@ async function executeNeonQuery(sqlQuery) {
     }
 }
 
+function updateSyncIndicator(status, message = '') {
+    const badgeEl = document.getElementById('db-sync-badge');
+    const iconEl = document.getElementById('db-sync-icon');
+    const textEl = document.getElementById('db-sync-text');
+    if (!badgeEl || !iconEl || !textEl) return;
+
+    badgeEl.className = `db-sync-badge status-${status}`;
+    if (status === 'syncing') {
+        iconEl.className = 'fa-solid fa-arrows-rotate fa-spin';
+        textEl.textContent = 'Syncing...';
+        badgeEl.title = 'Synchronizing with Neon Postgres DB...';
+    } else if (status === 'synced') {
+        iconEl.className = 'fa-solid fa-cloud-check';
+        textEl.textContent = 'Synced';
+        badgeEl.title = 'Live Neon Postgres DB Connected';
+    } else if (status === 'error') {
+        iconEl.className = 'fa-solid fa-triangle-exclamation';
+        textEl.textContent = 'Sync Error';
+        badgeEl.title = message || 'Neon Cloud DB Sync Failed (Offline/Fallback Mode)';
+    }
+}
+
+const safeNum = (v, fallback = 0) => {
+    const n = typeof v === 'number' ? v : parseFloat(v);
+    return (isNaN(n) || !isFinite(n)) ? fallback : n;
+};
+
+const safeInt = (v, fallback = 1) => {
+    const n = typeof v === 'number' ? v : parseInt(v, 10);
+    return (isNaN(n) || !isFinite(n)) ? fallback : n;
+};
+
 /* Data Persistence */
 function saveState() {
     safeExecute(() => {
@@ -314,6 +346,7 @@ function saveState() {
 }
 
 async function saveStateToNeon() {
+    updateSyncIndicator('syncing');
     try {
         if (appState.mocks.length > 0) {
             for (const m of appState.mocks) {
@@ -323,10 +356,10 @@ async function saveStateToNeon() {
                         id, category_id, paper_num, date, source, duration, total_qs, total_marks,
                         attempted, correct, wrong, score, percentile, cutoff, weaknesses, topic_name, accuracy, score_pct, unattempted, speed
                     ) VALUES (
-                        ${esc(m.id)}, ${esc(m.categoryId)}, ${m.paperNum || 0}, ${esc(m.date)}, ${esc(m.source)},
-                        ${m.duration || 0}, ${m.totalQs || 0}, ${m.totalMarks || 0}, ${m.attempted || 0}, ${m.correct || 0}, ${m.wrong || 0},
-                        ${m.score || 0}, ${m.percentile || 0}, ${m.cutoff || 0}, ${esc(m.weaknesses)}, ${esc(m.topicName)}, ${m.accuracy || 0}, ${m.scorePct || 0},
-                        ${m.unattempted || 0}, ${m.speed || 0}
+                        ${esc(m.id)}, ${esc(m.categoryId)}, ${safeInt(m.paperNum, 1)}, ${esc(m.date)}, ${esc(m.source)},
+                        ${safeNum(m.duration, 0)}, ${safeNum(m.totalQs, 0)}, ${safeNum(m.totalMarks, 0)}, ${safeNum(m.attempted, 0)}, ${safeNum(m.correct, 0)}, ${safeNum(m.wrong, 0)},
+                        ${safeNum(m.score, 0)}, ${safeNum(m.percentile, 0)}, ${safeNum(m.cutoff, 0)}, ${esc(m.weaknesses)}, ${esc(m.topicName)}, ${safeNum(m.accuracy, 0)}, ${safeNum(m.scorePct, 0)},
+                        ${safeNum(m.unattempted, 0)}, ${safeNum(m.speed, 0)}
                     )
                     ON CONFLICT (id) DO UPDATE SET
                         category_id = EXCLUDED.category_id,
@@ -362,8 +395,32 @@ async function saveStateToNeon() {
             `;
             await executeNeonQuery(sql);
         }
+        updateSyncIndicator('synced');
     } catch (err) {
         logEvent("Neon Cloud Sync error: " + err.message, "warn");
+        updateSyncIndicator('error', err.message);
+    }
+}
+
+
+async function deleteMockFromNeon(mockId) {
+    try {
+        if (!mockId) return;
+        const sql = `DELETE FROM adda_mock_logs WHERE id = '${mockId.replace(/'/g, "''")}';`;
+        await executeNeonQuery(sql);
+        logEvent(`Deleted mock ${mockId} from Neon Cloud DB`, "info");
+    } catch (err) {
+        logEvent("Neon delete warning: " + err.message, "warn");
+    }
+}
+
+async function clearAllFromNeon() {
+    try {
+        await executeNeonQuery("DELETE FROM adda_mock_logs;");
+        await executeNeonQuery("DELETE FROM adda_ibps_checked;");
+        logEvent("Cleared all records from Neon Cloud DB", "info");
+    } catch (err) {
+        logEvent("Neon clear error: " + err.message, "warn");
     }
 }
 
@@ -441,7 +498,13 @@ function loadState() {
 }
 
 async function loadStateFromNeon() {
+    updateSyncIndicator('syncing');
     try {
+        // First push local state to Neon to avoid losing newly entered data
+        if (appState.mocks.length > 0 || Object.keys(appState.ibpsChecked).length > 0) {
+            await saveStateToNeon();
+        }
+
         const logsRes = await executeNeonQuery("SELECT * FROM adda_mock_logs ORDER BY created_at DESC;");
         let updated = false;
 
@@ -469,14 +532,10 @@ async function loadStateFromNeon() {
                 speed: parseFloat(item.speed) || 0
             }));
 
-            // Smart Non-Destructive Merge: Combine DB records & Local records
+            // Smart Non-Destructive Merge: Local records override DB records to preserve edits
             const mergedMap = new Map();
             dbMocks.forEach(m => mergedMap.set(m.id, m));
-            appState.mocks.forEach(m => {
-                if (!mergedMap.has(m.id)) {
-                    mergedMap.set(m.id, m);
-                }
-            });
+            appState.mocks.forEach(m => mergedMap.set(m.id, m));
 
             appState.mocks = Array.from(mergedMap.values());
             updated = true;
@@ -485,7 +544,9 @@ async function loadStateFromNeon() {
         const ibpsRes = await executeNeonQuery("SELECT * FROM adda_ibps_checked;");
         if (ibpsRes && ibpsRes.rows && ibpsRes.rows.length > 0) {
             ibpsRes.rows.forEach(item => {
-                appState.ibpsChecked[item.id] = Boolean(item.checked);
+                if (appState.ibpsChecked[item.id] === undefined) {
+                    appState.ibpsChecked[item.id] = Boolean(item.checked);
+                }
             });
             updated = true;
         }
@@ -493,16 +554,13 @@ async function loadStateFromNeon() {
         if (updated) {
             localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
             localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
-            logEvent("Synchronized live global data from Neon Postgres Database (" + appState.mocks.length + " total records)", "success");
+            logEvent("Synchronized live data with Neon Postgres Database (" + appState.mocks.length + " total records)", "success");
             renderAllViews();
         }
-
-        // Push any unsynced local records up to Neon Postgres DB
-        if (appState.mocks.length > 0) {
-            saveStateToNeon();
-        }
+        updateSyncIndicator('synced');
     } catch (err) {
         logEvent("Neon cloud load fallback to LocalStorage: " + err.message, "info");
+        updateSyncIndicator('error', err.message);
     }
 }
 
@@ -514,6 +572,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initFormListeners();
     initMatrixFilters();
     initAnalyticsTableControls();
+
+    window.addEventListener('beforeunload', () => {
+        localStorage.setItem('air10_mocks_v2', JSON.stringify(appState.mocks));
+        localStorage.setItem('air10_ibps_checked', JSON.stringify(appState.ibpsChecked));
+    });
 
     renderAllViews();
 });
@@ -996,11 +1059,16 @@ function initCategoryFormOptions() {
     const catSelect = document.getElementById('mock-category-select');
     if (!catSelect) return;
 
-    let html = '<option value="" disabled selected>Select Test Category (1 of 20)</option>';
+    let html = '';
     Object.entries(MOCK_SERIES_CATALOG).forEach(([catId, cat]) => {
         html += `<option value="${catId}">${cat.name} (${cat.totalPapers} Papers)</option>`;
     });
     catSelect.innerHTML = html;
+
+    // Auto-select first category (prelims_full) by default
+    catSelect.value = 'prelims_full';
+    updatePaperNumOptions('prelims_full');
+    applyCategoryDefaults('prelims_full');
 
     catSelect.addEventListener('change', (e) => {
         const catId = e.target.value;
@@ -1013,6 +1081,7 @@ function initCategoryFormOptions() {
         dateInput.value = new Date().toISOString().split('T')[0];
     }
 }
+
 
 function updatePaperNumOptions(catId) {
     const paperSelect = document.getElementById('mock-paper-num');
@@ -1193,12 +1262,19 @@ function resetForm() {
     if (document.getElementById('mock-topic-name')) {
         document.getElementById('mock-topic-name').value = '';
     }
+    const catSelect = document.getElementById('mock-category-select');
+    if (catSelect) {
+        catSelect.value = 'prelims_full';
+        updatePaperNumOptions('prelims_full');
+        applyCategoryDefaults('prelims_full');
+    }
     document.getElementById('form-title').textContent = "Log Mock Test Result";
     document.getElementById('btn-save-mock').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Mock Score';
     document.getElementById('btn-cancel-edit').classList.add('hidden');
     document.getElementById('mock-date').value = new Date().toISOString().split('T')[0];
     updateRealtimeFormMetrics();
 }
+
 
 /* TAB 5: ANALYTICS & HISTORY TABLE VIEW */
 function initAnalyticsTableControls() {
@@ -1286,6 +1362,7 @@ function deleteMockLog(mockId) {
     if (!confirm("Are you sure you want to delete this mock log?")) return;
     appState.mocks = appState.mocks.filter(m => m.id !== mockId);
     saveState();
+    deleteMockFromNeon(mockId);
     renderAllViews();
     logEvent("Deleted mock log record", "warn");
 }
@@ -1293,7 +1370,9 @@ function deleteMockLog(mockId) {
 function clearAllLogs() {
     if (!confirm("WARNING: Are you sure you want to reset and clear ALL mock test logs?")) return;
     appState.mocks = [];
+    appState.ibpsChecked = {};
     saveState();
+    clearAllFromNeon();
     renderAllViews();
     logEvent("All mock test logs have been cleared", "error");
 }

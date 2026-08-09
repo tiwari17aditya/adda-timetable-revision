@@ -32,6 +32,11 @@
 | 12 | DB integrity protection rule in AGENTS.md | `.agents/AGENTS.md` | ✅ |
 | 13 | Packup routine rule in AGENTS.md + README.md created | `README.md`, `.agents/AGENTS.md` | ✅ |
 | 14 | Session rollback to Phase 10 state (Topic/Chapter clean point) | git reset `72160ac` | ✅ |
+| 15 | Refresh Data-Loss fix: Push-before-pull, local precedence merge, beforeunload listener | `app.js` | ✅ |
+| 16 | Neon Cloud DB Remote Deletions (`deleteMockFromNeon`, `clearAllFromNeon`) | `app.js` | ✅ |
+| 17 | Priority 1: `safeNum`/`safeInt` SQL input guards for empty field protection | `app.js` | ✅ |
+| 18 | Priority 2: Form default prefill for category selection (`prelims_full`) | `app.js` | ✅ |
+| 19 | Priority 3: Real-time Cloud DB Sync status badge indicator (🟢 Synced / 🔵 Syncing / 🔴 Error) | `index.html`, `styles.css`, `app.js` | ✅ |
 
 ---
 
@@ -43,4 +48,5 @@
 | Daily Routine Sessions | 63 sessions across 21 days |
 | Database Tables | `adda_mock_logs`, `adda_ibps_checked` |
 | Live URL | https://tiwari17aditya.github.io/adda-timetable-revision/ |
-| Current HEAD | `72160ac` — Topic/Chapter Name feature |
+| Status Indicator | Real-time Neon Cloud DB Sync Badge |
+
