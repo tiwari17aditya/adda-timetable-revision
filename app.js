@@ -280,8 +280,15 @@ function safeExecute(fn, context) {
 
 /* Dynamic Neon Serverless Postgres Cloud Sync (No Hardcoded Secrets) */
 function getNeonConnectionString() {
-    return localStorage.getItem('air10_neon_conn_string') || '';
+    let connStr = localStorage.getItem('air10_neon_conn_string') || '';
+    // Auto-purge revoked old connection string from previous sessions
+    if (connStr.includes('b9yrSdxR4FlT')) {
+        localStorage.removeItem('air10_neon_conn_string');
+        connStr = '';
+    }
+    return connStr;
 }
+
 
 function getNeonSqlUrl() {
     const connStr = getNeonConnectionString();
@@ -348,12 +355,19 @@ function saveNeonConnectionFromUI() {
         closeNeonConfigModal();
         loadStateFromNeon();
     } else {
-        localStorage.removeItem('air10_neon_conn_string');
-        logEvent("Cleared Neon Postgres connection string", "info");
-        closeNeonConfigModal();
-        updateSyncIndicator('unconfigured');
+        clearNeonConnectionFromUI();
     }
 }
+
+function clearNeonConnectionFromUI() {
+    localStorage.removeItem('air10_neon_conn_string');
+    const input = document.getElementById('neon-conn-input');
+    if (input) input.value = '';
+    logEvent("Cleared Neon Postgres connection string", "info");
+    closeNeonConfigModal();
+    updateSyncIndicator('unconfigured');
+}
+
 
 
 function updateSyncIndicator(status, message = '') {
