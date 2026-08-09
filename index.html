@@ -494,13 +494,17 @@
                 <p class="modal-desc">Paste your rotated Neon PostgreSQL Connection String below. It is stored securely in your browser's LocalStorage and never committed to source code.</p>
                 <div class="form-group">
                     <label for="neon-conn-input">Connection String (URL)</label>
-                    <input type="password" id="neon-conn-input" placeholder="postgresql://neondb_owner:npg_...@ep-...neon.tech/neondb?sslmode=require" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); color:#fff; font-family:monospace;">
+                    <input type="text" id="neon-conn-input" placeholder="postgresql://neondb_owner:npg_...@ep-...neon.tech/neondb?sslmode=require" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); color:#fff; font-family:monospace; font-size:0.82rem;">
                 </div>
             </div>
-            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button class="btn btn-outline" onclick="closeNeonConfigModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveNeonConnectionFromUI()"><i class="fa-solid fa-floppy-disk"></i> Save Connection</button>
+            <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+                <button class="btn btn-danger btn-sm" onclick="clearNeonConnectionFromUI()"><i class="fa-solid fa-trash"></i> Reset</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-outline" onclick="closeNeonConfigModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveNeonConnectionFromUI()"><i class="fa-solid fa-floppy-disk"></i> Save Connection</button>
+                </div>
             </div>
+
         </div>
     </div>
 
