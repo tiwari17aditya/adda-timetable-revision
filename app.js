@@ -283,25 +283,27 @@ const NEON_CONN_STRING = "postgresql://neondb_owner:npg_b9yrSdxR4FlT@ep-crimson-
 const NEON_SQL_URL = "https://ep-crimson-forest-ayk2jth0.c-5.us-east-2.aws.neon.tech/sql";
 
 async function executeNeonQuery(sqlQuery) {
-    try {
-        const response = await fetch(NEON_SQL_URL, {
-            method: 'POST',
-            headers: {
-                'Neon-Connection-String': NEON_CONN_STRING,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ query: sqlQuery })
-        });
-        if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(errText);
-        }
-        return await response.json();
-    } catch (err) {
-        logEvent("Neon Cloud DB query warning: " + err.message, "warn");
-        return null;
+    const response = await fetch(NEON_SQL_URL, {
+        method: 'POST',
+        headers: {
+            'Neon-Connection-String': NEON_CONN_STRING,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: sqlQuery })
+    });
+    if (!response.ok) {
+        const errText = await response.text();
+        logEvent(`Neon DB HTTP Error (${response.status}): ${errText}`, "error");
+        throw new Error(`HTTP ${response.status}: ${errText}`);
     }
+    const data = await response.json();
+    if (data.error) {
+        logEvent(`Neon DB SQL Error: ${data.error}`, "error");
+        throw new Error(data.error);
+    }
+    return data;
 }
+
 
 function updateSyncIndicator(status, message = '') {
     const badgeEl = document.getElementById('db-sync-badge');
@@ -349,58 +351,64 @@ async function saveStateToNeon() {
     updateSyncIndicator('syncing');
     try {
         if (appState.mocks.length > 0) {
-            for (const m of appState.mocks) {
-                const esc = (s) => (s !== undefined && s !== null ? `'${String(s).replace(/'/g, "''")}'` : "''");
-                const sql = `
-                    INSERT INTO adda_mock_logs (
-                        id, category_id, paper_num, date, source, duration, total_qs, total_marks,
-                        attempted, correct, wrong, score, percentile, cutoff, weaknesses, topic_name, accuracy, score_pct, unattempted, speed
-                    ) VALUES (
-                        ${esc(m.id)}, ${esc(m.categoryId)}, ${safeInt(m.paperNum, 1)}, ${esc(m.date)}, ${esc(m.source)},
-                        ${safeNum(m.duration, 0)}, ${safeNum(m.totalQs, 0)}, ${safeNum(m.totalMarks, 0)}, ${safeNum(m.attempted, 0)}, ${safeNum(m.correct, 0)}, ${safeNum(m.wrong, 0)},
-                        ${safeNum(m.score, 0)}, ${safeNum(m.percentile, 0)}, ${safeNum(m.cutoff, 0)}, ${esc(m.weaknesses)}, ${esc(m.topicName)}, ${safeNum(m.accuracy, 0)}, ${safeNum(m.scorePct, 0)},
-                        ${safeNum(m.unattempted, 0)}, ${safeNum(m.speed, 0)}
-                    )
-                    ON CONFLICT (id) DO UPDATE SET
-                        category_id = EXCLUDED.category_id,
-                        paper_num = EXCLUDED.paper_num,
-                        date = EXCLUDED.date,
-                        source = EXCLUDED.source,
-                        duration = EXCLUDED.duration,
-                        total_qs = EXCLUDED.total_qs,
-                        total_marks = EXCLUDED.total_marks,
-                        attempted = EXCLUDED.attempted,
-                        correct = EXCLUDED.correct,
-                        wrong = EXCLUDED.wrong,
-                        score = EXCLUDED.score,
-                        percentile = EXCLUDED.percentile,
-                        cutoff = EXCLUDED.cutoff,
-                        weaknesses = EXCLUDED.weaknesses,
-                        topic_name = EXCLUDED.topic_name,
-                        accuracy = EXCLUDED.accuracy,
-                        score_pct = EXCLUDED.score_pct,
-                        unattempted = EXCLUDED.unattempted,
-                        speed = EXCLUDED.speed;
-                `;
-                await executeNeonQuery(sql);
-            }
+            const esc = (s) => (s !== undefined && s !== null ? `'${String(s).replace(/'/g, "''")}'` : "''");
+            const values = appState.mocks.map(m => `(
+                ${esc(m.id)}, ${esc(m.categoryId)}, ${safeInt(m.paperNum, 1)}, ${esc(m.date)}, ${esc(m.source)},
+                ${safeNum(m.duration, 0)}, ${safeNum(m.totalQs, 0)}, ${safeNum(m.totalMarks, 0)}, ${safeNum(m.attempted, 0)}, ${safeNum(m.correct, 0)}, ${safeNum(m.wrong, 0)},
+                ${safeNum(m.score, 0)}, ${safeNum(m.percentile, 0)}, ${safeNum(m.cutoff, 0)}, ${esc(m.weaknesses)}, ${esc(m.topicName)}, ${safeNum(m.accuracy, 0)}, ${safeNum(m.scorePct, 0)},
+                ${safeNum(m.unattempted, 0)}, ${safeNum(m.speed, 0)}
+            )`).join(',\n');
+
+            const sql = `
+                INSERT INTO adda_mock_logs (
+                    id, category_id, paper_num, date, source, duration, total_qs, total_marks,
+                    attempted, correct, wrong, score, percentile, cutoff, weaknesses, topic_name, accuracy, score_pct, unattempted, speed
+                ) VALUES ${values}
+                ON CONFLICT (id) DO UPDATE SET
+                    category_id = EXCLUDED.category_id,
+                    paper_num = EXCLUDED.paper_num,
+                    date = EXCLUDED.date,
+                    source = EXCLUDED.source,
+                    duration = EXCLUDED.duration,
+                    total_qs = EXCLUDED.total_qs,
+                    total_marks = EXCLUDED.total_marks,
+                    attempted = EXCLUDED.attempted,
+                    correct = EXCLUDED.correct,
+                    wrong = EXCLUDED.wrong,
+                    score = EXCLUDED.score,
+                    percentile = EXCLUDED.percentile,
+                    cutoff = EXCLUDED.cutoff,
+                    weaknesses = EXCLUDED.weaknesses,
+                    topic_name = EXCLUDED.topic_name,
+                    accuracy = EXCLUDED.accuracy,
+                    score_pct = EXCLUDED.score_pct,
+                    unattempted = EXCLUDED.unattempted,
+                    speed = EXCLUDED.speed;
+            `;
+            await executeNeonQuery(sql);
             logEvent("Synced " + appState.mocks.length + " mock records to Neon Serverless Postgres DB", "success");
         }
 
-        for (const [id, checked] of Object.entries(appState.ibpsChecked)) {
-            const sql = `
+        const ibpsEntries = Object.entries(appState.ibpsChecked);
+        if (ibpsEntries.length > 0) {
+            const ibpsValues = ibpsEntries.map(([id, checked]) =>
+                `('${id.replace(/'/g, "''")}', ${checked ? 'TRUE' : 'FALSE'})`
+            ).join(',\n');
+
+            const ibpsSql = `
                 INSERT INTO adda_ibps_checked (id, checked)
-                VALUES ('${id.replace(/'/g, "''")}', ${checked ? 'TRUE' : 'FALSE'})
+                VALUES ${ibpsValues}
                 ON CONFLICT (id) DO UPDATE SET checked = EXCLUDED.checked;
             `;
-            await executeNeonQuery(sql);
+            await executeNeonQuery(ibpsSql);
         }
         updateSyncIndicator('synced');
     } catch (err) {
-        logEvent("Neon Cloud Sync error: " + err.message, "warn");
+        logEvent("Neon Cloud Sync error: " + err.message, "error");
         updateSyncIndicator('error', err.message);
     }
 }
+
 
 
 async function deleteMockFromNeon(mockId) {
@@ -1156,23 +1164,23 @@ function updateRealtimeFormMetrics() {
 
 function saveMockLogFromForm() {
     safeExecute(() => {
-        const editId = document.getElementById('edit-mock-id').value;
-        const categoryId = document.getElementById('mock-category-select').value;
-        const paperNum = parseInt(document.getElementById('mock-paper-num').value);
+        const editId = document.getElementById('edit-mock-id')?.value || '';
+        const categoryId = document.getElementById('mock-category-select')?.value || 'prelims_full';
+        const paperNum = parseInt(document.getElementById('mock-paper-num')?.value) || 1;
         const topicName = document.getElementById('mock-topic-name')?.value.trim() || '';
-        const rawDate = document.getElementById('mock-date').value;
+        const rawDate = document.getElementById('mock-date')?.value || new Date().toISOString().split('T')[0];
         const date = formatDateForInput(rawDate);
-        const source = document.getElementById('mock-series').value.trim();
-        const duration = parseFloat(document.getElementById('mock-duration').value);
-        const totalQs = parseFloat(document.getElementById('mock-total-qs').value);
-        const totalMarks = parseFloat(document.getElementById('mock-total-marks').value);
-        const attempted = parseFloat(document.getElementById('mock-attempted').value);
-        const correct = parseFloat(document.getElementById('mock-correct').value);
-        const wrong = parseFloat(document.getElementById('mock-wrong').value);
-        const score = parseFloat(document.getElementById('mock-score').value);
-        const percentile = parseFloat(document.getElementById('mock-percentile').value);
-        const cutoff = parseFloat(document.getElementById('mock-cutoff').value) || 0;
-        const weaknesses = document.getElementById('mock-weaknesses').value.trim();
+        const source = document.getElementById('mock-series')?.value.trim() || 'Adda247';
+        const duration = safeNum(document.getElementById('mock-duration')?.value, 60);
+        const totalQs = safeNum(document.getElementById('mock-total-qs')?.value, 100);
+        const totalMarks = safeNum(document.getElementById('mock-total-marks')?.value, 100);
+        const attempted = safeNum(document.getElementById('mock-attempted')?.value, 0);
+        const correct = safeNum(document.getElementById('mock-correct')?.value, 0);
+        const wrong = safeNum(document.getElementById('mock-wrong')?.value, 0);
+        const score = safeNum(document.getElementById('mock-score')?.value, 0);
+        const percentile = safeNum(document.getElementById('mock-percentile')?.value, 0);
+        const cutoff = safeNum(document.getElementById('mock-cutoff')?.value, 0);
+        const weaknesses = document.getElementById('mock-weaknesses')?.value.trim() || '';
 
         const accuracy = attempted > 0 ? parseFloat(((correct / attempted) * 100).toFixed(2)) : 0;
         const scorePct = totalMarks > 0 ? parseFloat(((score / totalMarks) * 100).toFixed(2)) : 0;
@@ -1217,6 +1225,7 @@ function saveMockLogFromForm() {
         switchTab('dashboard');
     }, "SaveMockForm");
 }
+
 
 function editMockLog(mockId) {
     const mock = appState.mocks.find(m => m.id === mockId);
