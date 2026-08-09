@@ -302,27 +302,27 @@ function getNeonSqlUrl() {
 }
 
 
+// Vercel proxy URL — eliminates browser CORS preflight issues with custom Neon-Connection-String header
+const NEON_PROXY_URL = 'https://adda-timetable-revision.vercel.app/api/neon';
+
 async function executeNeonQuery(sqlQuery) {
     const connStr = getNeonConnectionString();
-    const sqlUrl = getNeonSqlUrl();
 
-    if (!connStr || !sqlUrl) {
+    if (!connStr) {
         updateSyncIndicator('unconfigured');
-        throw new Error("Neon DB connection string not configured. Please click the Settings gear icon to paste your rotated Connection String.");
+        throw new Error("Neon DB connection string not configured. Please click the Settings gear icon to paste your Connection String.");
     }
 
-    const response = await fetch(sqlUrl, {
+    // Route via Vercel proxy (no custom headers needed → no CORS preflight)
+    const response = await fetch(NEON_PROXY_URL, {
         method: 'POST',
-        headers: {
-            'Neon-Connection-String': connStr,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ query: sqlQuery })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: sqlQuery, connStr })
     });
 
     if (!response.ok) {
         const errText = await response.text();
-        logEvent(`Neon DB HTTP Error (${response.status}): ${errText}`, "error");
+        logEvent(`Neon Proxy Error (${response.status}): ${errText}`, "error");
         throw new Error(`HTTP ${response.status}: ${errText}`);
     }
 
@@ -333,6 +333,7 @@ async function executeNeonQuery(sqlQuery) {
     }
     return data;
 }
+
 
 function openNeonConfigModal() {
     const modal = document.getElementById('neon-config-modal');
